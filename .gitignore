@@ -1,0 +1,22 @@
+node_modules
+.next
+out
+.log
+*.log
+
+# Env files — never commit secrets. The example is intentionally tracked.
+.env
+.env.*
+!.env.example
+
+# Test artifacts
+.coverage
+coverage
+playwright-report
+test-results
+
+# Editor / OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
