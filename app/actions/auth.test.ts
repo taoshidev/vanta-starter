@@ -52,11 +52,14 @@ describe("signupAction", () => {
   });
 
   it("maps an HscApiError to its code", async () => {
+    // ``V2_EMAIL_EXISTS`` is what the API actually emits — the M5
+    // normalized-email uniqueness fix made this the canonical conflict code
+    // for plus-aliased / cased duplicates too.
     vi.spyOn(hsc.auth, "signup").mockRejectedValue(
-      new hsc.HscApiError(409, "V2_EMAIL_TAKEN", "taken"),
+      new hsc.HscApiError(409, "V2_EMAIL_EXISTS", "Email already in use"),
     );
     const r = await signupAction(fd({ email: "x@y.com", password: "p" }));
-    expect(r).toMatchObject({ ok: false, code: "V2_EMAIL_TAKEN" });
+    expect(r).toMatchObject({ ok: false, code: "V2_EMAIL_EXISTS" });
   });
 
   it("maps a non-API error to UNKNOWN", async () => {
@@ -93,16 +96,26 @@ describe("verifyEmailAction", () => {
 });
 
 describe("loginAction", () => {
-  it("sets the cookie and surfaces mfa_required", async () => {
+  it("surfaces mfa_required without setting a cookie (no token yet)", async () => {
+    // After the API's MFA hardening the first request returns
+    // ``mfa_required`` with no session token — the cookie must NOT be set,
+    // otherwise the user would skip the second factor entirely.
+    vi.spyOn(hsc.auth, "login").mockResolvedValue({ mfa_required: true });
+    const r = await loginAction(fd({ email: "x@y.com", password: "p" }));
+    expect(r).toEqual({ ok: true, data: { mfa_required: true } });
+    expect(setSessionCookie).not.toHaveBeenCalled();
+  });
+
+  it("sets the cookie when the API issues a session token", async () => {
     vi.spyOn(hsc.auth, "login").mockResolvedValue({
       user_id: "u1",
       email: "x@y.com",
       session_token: "tok",
       session_expires_at: "2099-01-01T00:00:00Z",
-      mfa_required: true,
+      mfa_required: false,
     });
     const r = await loginAction(fd({ email: "x@y.com", password: "p" }));
-    expect(r).toEqual({ ok: true, data: { mfa_required: true } });
+    expect(r).toEqual({ ok: true, data: { mfa_required: false } });
     expect(setSessionCookie).toHaveBeenCalledWith("tok", "2099-01-01T00:00:00Z");
   });
 
@@ -124,6 +137,14 @@ describe("loginAction", () => {
     );
     const r = await loginAction(fd({ email: "x@y.com", password: "bad" }));
     expect(r).toMatchObject({ ok: false, code: "V2_INVALID_CREDENTIALS" });
+  });
+
+  it("propagates V2_THROTTLED so the UI can show a backoff hint", async () => {
+    vi.spyOn(hsc.auth, "login").mockRejectedValue(
+      new hsc.HscApiError(429, "V2_THROTTLED", "Too many login attempts. Try again in ~8s."),
+    );
+    const r = await loginAction(fd({ email: "x@y.com", password: "p" }));
+    expect(r).toMatchObject({ ok: false, code: "V2_THROTTLED" });
   });
 });
 

@@ -111,12 +111,16 @@ export const auth = {
       json: { email },
       authedAsUser: false,
     }),
+  // When the user has TOTP enabled and no `totp_code` is supplied, the API
+  // responds with `{ mfa_required: true }` and no session token — the caller
+  // must re-submit with the second factor. The session/user fields are only
+  // populated once authentication is fully complete.
   login: (email: string, password: string, totp_code?: string) =>
     hsc<{
-      user_id: string;
-      email: string;
-      session_token: string;
-      session_expires_at: string;
+      user_id?: string;
+      email?: string;
+      session_token?: string;
+      session_expires_at?: string;
       mfa_required: boolean;
     }>("/v2/auth/login", {
       method: "POST",

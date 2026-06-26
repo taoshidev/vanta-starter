@@ -59,7 +59,12 @@ export async function loginAction(
   const totp_code = formData.get("totp_code") ? String(formData.get("totp_code")) : undefined;
   try {
     const r = await hsc.auth.login(email, password, totp_code);
-    await setSessionCookie(r.session_token, r.session_expires_at);
+    // The API now refuses to issue a session token until the second factor
+    // is supplied — so MFA-pending responses arrive without a token. Only
+    // set the cookie when the API actually issued one.
+    if (r.session_token) {
+      await setSessionCookie(r.session_token, r.session_expires_at ?? null);
+    }
     return { ok: true, data: { mfa_required: Boolean(r.mfa_required) } };
   } catch (e) {
     return failure<{ mfa_required: boolean }>(e);
