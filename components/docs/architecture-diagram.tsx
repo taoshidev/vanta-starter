@@ -15,7 +15,7 @@ type Node = {
 
 const NODES: Node[] = [
   { id: "user", x: 24, y: 150, w: 150, h: 70, title: "Your traders", subtitle: "Web / mobile", tone: "you" },
-  { id: "app", x: 230, y: 150, w: 160, h: 70, title: "Your app", subtitle: "Vanta starter UI", tone: "you" },
+  { id: "app", x: 230, y: 150, w: 160, h: 70, title: "Your app", subtitle: "PropFund UI", tone: "you" },
   { id: "api", x: 450, y: 140, w: 180, h: 92, title: "Hyperscaled API", subtitle: "OAuth · multi-tenant", tone: "platform" },
   { id: "stripe", x: 690, y: 40, w: 150, h: 56, title: "Stripe", subtitle: "Payments · Connect", tone: "external" },
   { id: "sumsub", x: 690, y: 152, w: 150, h: 56, title: "Sumsub", subtitle: "KYC / identity", tone: "external" },
@@ -31,9 +31,9 @@ const EDGES: [string, string][] = [
 ];
 
 const TONE: Record<Node["tone"], { fill: string; stroke: string; text: string; sub: string }> = {
-  you: { fill: "hsl(240 7% 11%)", stroke: "hsl(240 5% 24%)", text: "hsl(0 0% 98%)", sub: "hsl(240 5% 64%)" },
-  platform: { fill: "hsl(158 84% 45% / 0.12)", stroke: "hsl(158 84% 45% / 0.5)", text: "hsl(0 0% 100%)", sub: "hsl(158 60% 70%)" },
-  external: { fill: "hsl(240 7% 10%)", stroke: "hsl(255 30% 92% / 0.12)", text: "hsl(0 0% 92%)", sub: "hsl(240 5% 60%)" },
+  you: { fill: "hsl(222 24% 11%)", stroke: "hsl(222 18% 24%)", text: "hsl(210 40% 98%)", sub: "hsl(215 16% 62%)" },
+  platform: { fill: "hsl(214 90% 56% / 0.12)", stroke: "hsl(214 90% 56% / 0.5)", text: "hsl(0 0% 100%)", sub: "hsl(204 80% 72%)" },
+  external: { fill: "hsl(222 24% 10%)", stroke: "hsl(210 40% 92% / 0.12)", text: "hsl(0 0% 92%)", sub: "hsl(215 16% 60%)" },
 };
 
 function center(n: Node) {
@@ -56,8 +56,8 @@ export function ArchitectureDiagram() {
       <svg viewBox="0 0 860 360" className="h-auto w-full min-w-[680px]" role="img" aria-label="Integration architecture">
         <defs>
           <linearGradient id="edge-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="hsl(158 84% 45% / 0.1)" />
-            <stop offset="100%" stopColor="hsl(158 84% 55% / 0.9)" />
+            <stop offset="0%" stopColor="hsl(214 90% 56% / 0.1)" />
+            <stop offset="100%" stopColor="hsl(192 85% 48% / 0.9)" />
           </linearGradient>
         </defs>
 
@@ -65,7 +65,7 @@ export function ArchitectureDiagram() {
           const d = edgePath(byId(a), byId(b));
           return (
             <g key={`${a}-${b}`}>
-              <path d={d} fill="none" stroke="hsl(255 30% 92% / 0.1)" strokeWidth={1.5} />
+              <path d={d} fill="none" stroke="hsl(210 40% 92% / 0.1)" strokeWidth={1.5} />
               <motion.path
                 d={d}
                 fill="none"

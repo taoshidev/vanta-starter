@@ -1,34 +1,30 @@
 import { cn } from "@/lib/utils";
-
-const MARK_PATH =
-  "M35.0907 11.9198L25.6987 22.127L16.1859 11.9578L22.4156 15.1551L23.9335 15.9354L25.1985 14.7269L25.6498 14.2955L26.0005 14.6571L27.2798 15.9735L28.8639 15.1519L35.0907 11.9229M47.694 2.23269L27.7657 12.5637L25.7131 10.4575L23.5052 12.5637L3.3728 2.23269L25.7131 26.1173L47.694 2.23269Z";
-
-const WORDMARK_PATHS = [
-  "M55.4182 6.82292H59.9864L63.8469 16.2429L67.7075 6.82292H71.8964L66.2895 20.05H61.2742L55.4182 6.82292Z",
-  "M73.5748 17.756L72.6351 20.05H68.6925L74.2682 6.82292H79.4647L85.2216 20.05H81.0157L80.0591 17.756H73.5748ZM74.7805 14.8397H78.8534L76.7929 9.89785L74.7805 14.8397Z",
-  "M89.5888 20.05H85.7452V6.82292H89.77L96.6646 14.7512V6.82292H100.491V20.05H96.6816L89.5888 11.9783V20.05Z",
-  "M101.188 10.1663V6.82292H115.834V10.1663H110.474V20.05H106.548V10.1663H101.188Z",
-  "M129.774 20.0713H125.206L121.345 10.6513L117.485 20.0713H113.296L118.903 6.84427H123.918L129.774 20.0713Z",
-];
-
-const GRAD_ID = "vanta-mark-grad";
+import {
+  BRAND_CYAN_HSL,
+  BRAND_MARK_GRAD_ID,
+  BRAND_MARK_LETTER,
+  BRAND_NAME,
+  BRAND_PRIMARY_BRIGHT_HSL,
+  BRAND_PRIMARY_DEEP_HSL,
+  type BrandKind,
+} from "@/lib/brand";
 
 /**
- * The real Vanta logo. The diamond mark is filled with the brand emerald
- * gradient; the wordmark uses currentColor so it inherits text color.
+ * PropFund logo lockup. The mark is a rounded sapphire→cyan tile with the
+ * Greek capital Phi (Φ); the wordmark uses currentColor so it inherits text
+ * color from the shell.
  *
  * - `showWordmark={false}` renders the mark only (collapsed sidebar).
- * - `brand="hyperscaled"` renders the Hyperscaled lockup (used in docs/API
- *   surfaces to signal the underlying platform).
+ * - `brand="hyperscaled"` renders the Hyperscaled lockup (docs/API surfaces).
  */
 export function Brand({
   className,
   showWordmark = true,
-  brand = "vanta",
+  brand = "propfund",
 }: {
   className?: string;
   showWordmark?: boolean;
-  brand?: "vanta" | "hyperscaled";
+  brand?: BrandKind;
 }) {
   if (brand === "hyperscaled") {
     // eslint-disable-next-line @next/next/no-img-element
@@ -41,41 +37,71 @@ export function Brand({
     );
   }
 
+  const gradId = showWordmark ? `${BRAND_MARK_GRAD_ID}-full` : `${BRAND_MARK_GRAD_ID}-mark`;
+
   const gradient = (
     <defs>
-      <linearGradient id={GRAD_ID} x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="hsl(158 84% 52%)" />
-        <stop offset="100%" stopColor="hsl(168 84% 38%)" />
+      <linearGradient id={gradId} x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0%" stopColor={`hsl(${BRAND_PRIMARY_DEEP_HSL})`} />
+        <stop offset="55%" stopColor={`hsl(${BRAND_PRIMARY_BRIGHT_HSL})`} />
+        <stop offset="100%" stopColor={`hsl(${BRAND_CYAN_HSL})`} />
       </linearGradient>
     </defs>
+  );
+
+  const mark = (
+    <g>
+      <rect x="1" y="1" width="30" height="30" rx="8" fill={`url(#${gradId})`} />
+      <text
+        x="16"
+        y="16.5"
+        fill="white"
+        fillOpacity="0.96"
+        fontFamily="var(--font-geist-sans), ui-sans-serif, system-ui, Georgia, serif"
+        fontSize="18"
+        fontWeight="600"
+        textAnchor="middle"
+        dominantBaseline="central"
+      >
+        {BRAND_MARK_LETTER}
+      </text>
+    </g>
   );
 
   if (!showWordmark) {
     return (
       <svg
-        viewBox="2 1 47 25"
+        viewBox="0 0 32 32"
         className={cn("h-7 w-auto", className)}
         role="img"
-        aria-label="Vanta"
+        aria-label={BRAND_NAME}
       >
         {gradient}
-        <path d={MARK_PATH} fill={`url(#${GRAD_ID})`} />
+        {mark}
       </svg>
     );
   }
 
   return (
     <svg
-      viewBox="0 0 132 27"
+      viewBox="0 0 148 32"
       className={cn("h-6 w-auto", className)}
       role="img"
-      aria-label="Vanta"
+      aria-label={BRAND_NAME}
     >
       {gradient}
-      <path d={MARK_PATH} fill={`url(#${GRAD_ID})`} />
-      {WORDMARK_PATHS.map((d) => (
-        <path key={d} d={d} fill="currentColor" />
-      ))}
+      {mark}
+      <text
+        x="40"
+        y="22"
+        fill="currentColor"
+        fontFamily="var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif"
+        fontSize="16"
+        fontWeight="600"
+        letterSpacing="-0.03em"
+      >
+        {BRAND_NAME}
+      </text>
     </svg>
   );
 }

@@ -5,14 +5,15 @@ import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
+import { BRAND_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: {
-    default: "Vanta — Prop Trading, Powered by Hyperscaled",
-    template: "%s · Vanta",
+    default: `${BRAND_NAME} — Trade with Our Capital`,
+    template: `%s · ${BRAND_NAME}`,
   },
   description:
-    "A world-class reference app built on hyperscaled-api: onboarding, KYC, payments, payouts, and live trading.",
+    "PropFund funds skilled traders. Pass a challenge, get a funded account, and keep the majority of your profits.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

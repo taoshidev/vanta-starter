@@ -7,11 +7,12 @@ import { DocsSidebar } from "@/components/docs/docs-sidebar";
 import { DocsToc } from "@/components/docs/toc";
 import { PageFade } from "@/components/motion/page-fade";
 import { Button } from "@/components/ui/button";
+import { BRAND_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: {
     default: "Docs",
-    template: "%s · Vanta Docs",
+    template: `%s · ${BRAND_NAME} Docs`,
   },
   description:
     "Developer documentation for building on hyperscaled-api: auth, KYC, payments, payouts, trading, API keys and webhooks.",

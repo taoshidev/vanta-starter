@@ -39,9 +39,9 @@ test.describe("onboarding happy path", () => {
     await page.waitForURL("**/dashboard/trading**");
     await page.getByPlaceholder("Pair").fill("BTC/USD");
     await page.getByRole("button", { name: "Submit market order" }).click();
-    await expect(page.locator(".text-vanta-accent")).toContainText(/Order submitted/i);
+    await expect(page.locator("[data-sonner-toast]").filter({ hasText: /Order submitted/i })).toBeVisible();
 
     await page.getByRole("button", { name: "Close" }).first().click();
-    await expect(page.locator(".text-vanta-accent")).toContainText(/Closed/i);
+    await expect(page.locator("[data-sonner-toast]").filter({ hasText: /Closed/i })).toBeVisible();
   });
 });

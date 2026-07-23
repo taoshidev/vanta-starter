@@ -2,10 +2,9 @@ import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
 
 /**
- * Modern-fintech dark theme on the hyperscaled/vanta brand: near-black zinc
- * surfaces, violet-tinted hairline borders, an emerald primary accent. All
- * colors are HSL CSS variables (see app/globals.css) so shadcn primitives and
- * app code share one source of truth.
+ * PropFund modern-fintech theme: cool navy-slate surfaces, sapphire primary,
+ * cyan accents. All colors are HSL CSS variables (see app/globals.css) so
+ * shadcn primitives and app code share one source of truth.
  */
 export default {
   darkMode: ["class"],

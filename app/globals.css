@@ -3,32 +3,31 @@
 @tailwind utilities;
 
 /*
- * Design tokens — modern fintech dark theme on the hyperscaled/vanta brand.
- * Zinc-950 canvas, zinc-900 cards, violet-tinted hairline borders, emerald
- * primary. Values are HSL channels consumed via hsl(var(--token)) so Tailwind
- * and shadcn primitives share one palette.
+ * Design tokens — PropFund modern fintech theme.
+ * Cool navy-slate canvas, sapphire primary, cyan accents. Values are HSL
+ * channels consumed via hsl(var(--token)) so Tailwind and shadcn share one palette.
  */
 :root {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
+  --background: 222 28% 5%;
+  --foreground: 210 40% 98%;
 
-  --card: 240 7% 8%;
-  --card-foreground: 0 0% 98%;
+  --card: 222 24% 8%;
+  --card-foreground: 210 40% 98%;
 
-  --popover: 240 8% 6%;
-  --popover-foreground: 0 0% 98%;
+  --popover: 222 26% 7%;
+  --popover-foreground: 210 40% 98%;
 
-  --primary: 158 84% 45%;
-  --primary-foreground: 160 84% 6%;
+  --primary: 214 90% 56%;
+  --primary-foreground: 222 47% 6%;
 
-  --secondary: 240 5% 14%;
-  --secondary-foreground: 0 0% 98%;
+  --secondary: 222 18% 14%;
+  --secondary-foreground: 210 40% 98%;
 
-  --muted: 240 5% 13%;
-  --muted-foreground: 240 5% 64%;
+  --muted: 222 16% 13%;
+  --muted-foreground: 215 16% 62%;
 
-  --accent: 240 5% 16%;
-  --accent-foreground: 0 0% 98%;
+  --accent: 222 18% 16%;
+  --accent-foreground: 210 40% 98%;
 
   --destructive: 0 72% 56%;
   --destructive-foreground: 0 0% 98%;
@@ -39,14 +38,14 @@
   --warning: 38 92% 56%;
   --warning-foreground: 38 92% 8%;
 
-  --border: 255 30% 92% / 0.08;
-  --input: 255 30% 92% / 0.12;
-  --ring: 158 84% 45%;
+  --border: 210 40% 92% / 0.08;
+  --input: 210 40% 92% / 0.12;
+  --ring: 214 90% 56%;
 
-  --sidebar: 240 9% 5%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-accent: 240 5% 12%;
-  --sidebar-border: 255 30% 92% / 0.07;
+  --sidebar: 222 30% 6%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-accent: 222 18% 12%;
+  --sidebar-border: 210 40% 92% / 0.07;
 
   --radius: 0.7rem;
 }
@@ -67,7 +66,7 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
   }
-  /* Ambient brand glow on the app canvas. */
+  /* Ambient PropFund glow — sapphire + cyan. */
   body::before {
     content: "";
     position: fixed;
@@ -75,8 +74,8 @@
     z-index: -1;
     pointer-events: none;
     background:
-      radial-gradient(60rem 40rem at 12% -10%, hsl(var(--primary) / 0.08), transparent 60%),
-      radial-gradient(50rem 35rem at 100% 0%, hsl(250 90% 60% / 0.06), transparent 55%);
+      radial-gradient(60rem 40rem at 12% -10%, hsl(var(--primary) / 0.1), transparent 60%),
+      radial-gradient(50rem 35rem at 100% 0%, hsl(192 85% 48% / 0.07), transparent 55%);
   }
 }
 

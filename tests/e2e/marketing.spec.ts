@@ -12,22 +12,22 @@ test.describe("landing page", () => {
     const home = new MarketingPage(page);
     await home.goto();
 
-    await expect(home.heroHeading()).toContainText(/Ship a prop-trading product/i);
+    await expect(home.heroHeading()).toContainText(/Trade with our capital/i);
     await expect(home.navLink("Sign in")).toBeVisible();
-    await expect(home.navLink(/Get started/)).toBeVisible();
+    await expect(home.navLink(/Start a challenge/)).toBeVisible();
   });
 
-  test("'Get started' navigates to signup", async ({ page }) => {
+  test("'Start a challenge' navigates to signup", async ({ page }) => {
     const home = new MarketingPage(page);
     await home.goto();
-    await home.navLink(/Get started/).click();
+    await home.navLink(/Start a challenge/).click();
     await expect(page).toHaveURL(/\/signup$/);
   });
 
-  test("'Read the quickstart' navigates into the docs", async ({ page }) => {
+  test("'How it works' scrolls to the journey section", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: /Read the quickstart/i }).click();
-    await expect(page).toHaveURL(/\/docs\/quickstart$/);
+    await page.getByRole("link", { name: /How it works/i }).first().click();
+    await expect(page.locator("#how-it-works")).toBeVisible();
   });
 
   test("the header docs link opens the docs index", async ({ page }) => {

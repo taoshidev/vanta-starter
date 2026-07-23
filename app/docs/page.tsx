@@ -82,7 +82,7 @@ export default function DocsIndexPage() {
           The Hyperscaled API gives you everything behind a modern prop firm —
           identity verification, payments, funded accounts, live trading, and
           payouts — behind one multi-tenant REST API. This is the documentation
-          for the same endpoints that power the <strong>Vanta</strong> reference
+          for the same endpoints that power the <strong>PropFund</strong> reference
           app you&apos;re looking at.
         </p>
       </header>

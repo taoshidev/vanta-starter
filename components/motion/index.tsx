@@ -133,12 +133,12 @@ export function Aurora({ className }: { className?: string }) {
         { x: [0, 60, 0], y: [0, 40, 0], scale: [1, 1.1, 1] },
       )}
       {blob(
-        "right-[0%] top-[10%] size-[30rem] bg-violet-500/15",
+        "right-[0%] top-[10%] size-[30rem] bg-sky-400/15",
         { x: [0, -50, 0], y: [0, 60, 0], scale: [1, 1.15, 1] },
         2,
       )}
       {blob(
-        "left-[30%] bottom-[-15%] size-[28rem] bg-sky-500/10",
+        "left-[30%] bottom-[-15%] size-[28rem] bg-cyan-400/10",
         { x: [0, 40, 0], y: [0, -30, 0], scale: [1, 1.08, 1] },
         4,
       )}
