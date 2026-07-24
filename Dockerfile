@@ -10,7 +10,9 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@11.16.0 --activate
 
-COPY package.json pnpm-lock.yaml ./
+# pnpm-workspace.yaml carries allowBuilds (sharp/esbuild/msw); required for
+# pnpm 11+ or install fails with ERR_PNPM_IGNORED_BUILDS.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # ── build ────────────────────────────────────────────────────────────────────
