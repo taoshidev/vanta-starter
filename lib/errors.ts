@@ -22,9 +22,20 @@ const FRIENDLY: Record<string, string> = {
   // tries to access a protected route before submitting the second factor.
   V2_MFA_PENDING: "Two-factor verification is required to continue.",
   // OAuth/scope errors — usually means the platform owner needs to grant the
-  // tenant a wider ``allowed_scopes`` list.
+  // tenant a wider ``allowed_scopes`` list. Note that a few scopes are
+  // platform-only and cannot be granted to a partner tenant at all:
+  // ``payouts:write`` (payout initiation) is deliberately excluded from the
+  // ``api`` superscope, so partner calls to POST /v2/payouts/request and
+  // /v2/payouts/{id}/submit always get 403 here. Payout disbursement is an
+  // operator-driven step; partners get the read surface only.
   V2_INVALID_SCOPE: "This app isn't allowed to request that capability. Contact support.",
   V2_SCOPE_MISSING: "This app doesn't have permission to access that resource.",
+  // Connect onboarding needs the tenant's own return/refresh URLs, which live
+  // on the app row on the API side — an operator sets them via
+  // PATCH /v2/admin/apps/{app_id}. Never show that path to an end user.
+  V2_CONNECT_URLS_NOT_CONFIGURED:
+    "Bank payouts aren't set up for this app yet. Please contact support.",
+  V2_STRIPE_NOT_CONFIGURED: "Payouts aren't available right now.",
   V2_KYC_NOT_CONFIGURED: "Identity verification isn't available right now.",
   V2_SUMSUB_NOT_CONFIGURED: "Identity verification isn't configured for this app yet.",
   V2_SUMSUB_HTTP: "Identity verification provider is temporarily unavailable.",

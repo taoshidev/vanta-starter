@@ -30,7 +30,16 @@ type Endpoint = {
   description: string | null;
 };
 
-const EVENT_OPTIONS = ["payment.succeeded", "payment.failed", "kyc.updated", "payout.completed", "*"];
+// Keep in sync with the API's emitted set (services/webhooks_out.py) and with
+// the table in app/docs/webhooks.
+const EVENT_OPTIONS = [
+  "payment.succeeded",
+  "payment.failed",
+  "kyc.updated",
+  "payout.completed",
+  "payout.failed",
+  "*",
+];
 
 export function WebhooksClient({ endpoints: initial }: { endpoints: Endpoint[] }) {
   const [endpoints, setEndpoints] = useState(initial);

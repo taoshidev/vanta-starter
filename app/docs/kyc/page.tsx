@@ -59,7 +59,7 @@ const { token, level_name } = await kyc.sumsubToken();
             code={`{
   "token": "_act-sbx-...",
   "user_id": "usr_...",
-  "level_name": "basic-kyc-level",
+  "level_name": "id-and-liveness",
   "applicant_id": "5f9...c1"
 }`}
           />
