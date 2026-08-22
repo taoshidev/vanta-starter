@@ -6,7 +6,7 @@
 
 A production-grade **Next.js 15 (TypeScript)** reference app that shows how to
 build a complete trading product on top of
-**[hyperscaled-api](../hyperscaled-api) `/v2`** — the multi-tenant platform that
+**hyperscaled-api `/v2`** — the multi-tenant platform that
 exposes Vanta network onboarding, Stripe checkout, Sumsub KYC, Stripe Connect
 payouts, and trading behind a single OAuth2-authenticated REST API.
 
@@ -82,7 +82,7 @@ exchange it for a short-lived bearer token, then attach the end-user's
 |------|---------|-------|
 | [Node.js](https://nodejs.org) | `20+` | See [`.nvmrc`](./.nvmrc). `nvm use` picks it up. |
 | [pnpm](https://pnpm.io) | `9+` | `npm i -g pnpm`. npm / yarn / bun also work. |
-| **hyperscaled-api** | running | Local (`http://localhost:8000`) or a hosted deployment. See [its README](../hyperscaled-api/README.md). |
+| **hyperscaled-api** | running | The platform API this app talks to — local (`http://localhost:8000`) or the hosted deployment at [staging.api.vantanetwork.io](https://api.staging.vantanetwork.io/docs). |
 | Stripe test keys | optional | Only needed to exercise the checkout UI. |
 
 You do **not** need Postgres, Redis, Stripe, or Sumsub locally — those are owned
