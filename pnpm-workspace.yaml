@@ -5,3 +5,5 @@ allowBuilds:
   esbuild: true
   msw: true
   sharp: true
+  # Native resolver used by eslint-config-next's import plugin.
+  unrs-resolver: true
