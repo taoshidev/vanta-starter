@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, development]
   pull_request:
-    branches: [main]
+    # `development` is the integration branch — everything lands here first, so
+    # CI must run on it. Previously only `main` was covered, which meant the
+    # entire development workflow merged unvalidated and problems only surfaced
+    # on the development -> main PR.
+    branches: [main, development]
 
 jobs:
   build:
@@ -14,7 +18,10 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          # Must match the lockfile + pnpm-workspace.yaml format. pnpm 9 fails
+          # with "packages field missing or empty" on a settings-only workspace
+          # file, which is the pnpm 11 layout this repo uses.
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
@@ -49,7 +56,10 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          # Must match the lockfile + pnpm-workspace.yaml format. pnpm 9 fails
+          # with "packages field missing or empty" on a settings-only workspace
+          # file, which is the pnpm 11 layout this repo uses.
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
