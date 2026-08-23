@@ -19,6 +19,7 @@ export type RefEndpoint = {
   runOp?: DocsOperation;
   curl: string;
   curlHtml: string;
+  requestLabel?: string;
   requestHtml?: string;
   responseHtml?: string;
 };
@@ -84,7 +85,9 @@ function EndpointRow({ ep }: { ep: RefEndpoint }) {
 
           {ep.requestHtml && (
             <div className="space-y-2">
-              <span className="text-xs font-medium text-muted-foreground">Request body</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                {ep.requestLabel ?? "Request body"}
+              </span>
               <Code html={ep.requestHtml} />
             </div>
           )}

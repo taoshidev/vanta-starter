@@ -29,6 +29,16 @@ export type Endpoint = {
   summary: string;
   auth: AuthKind;
   request?: string;
+  /**
+   * Form-encoded body, one `key=value` per line, for endpoints that do NOT accept
+   * JSON. Only the OAuth token endpoint is in this shape: `POST /v2/oauth/token`
+   * binds its fields with FastAPI `Form()`, so `openapi.json` lists exactly one
+   * content type — `application/x-www-form-urlencoded` (RFC 6749 §4.4). Sending
+   * JSON there returns 422 with FastAPI's raw validation array, not the usual
+   * `{"detail":{"code":...}}` envelope. Set this instead of `request` so
+   * `buildCurl` emits `-d k=v` pairs under the right Content-Type.
+   */
+  requestForm?: string;
   response?: string;
   note?: string;
   runOp?: DocsOperation;
@@ -65,8 +75,12 @@ export const API_CATALOG: ApiArea[] = [
         path: "/v2/oauth/token",
         summary: "Client-credentials grant → access token.",
         auth: "public",
-        request: `{ "grant_type": "client_credentials", "client_id": "hsc_...", "client_secret": "hsk_...", "scope": "api" }`,
+        requestForm: `grant_type=client_credentials
+client_id=hsc_...
+client_secret=hsk_...
+scope=api`,
         response: `{ "access_token": "eyJ...", "token_type": "Bearer", "expires_in": 3600, "scope": "api" }`,
+        note: "scope is optional; omit it to receive every scope your app holds. Scopes your app lacks are dropped silently \u2014 400 V2_INVALID_SCOPE is returned only when none of the requested scopes is allowed \u2014 so read the scope field of the token response to see what was actually granted. Any grant_type other than client_credentials returns 400 V2_UNSUPPORTED_GRANT.",
       },
       {
         method: "GET",
@@ -137,8 +151,8 @@ export const API_CATALOG: ApiArea[] = [
     docHref: "/docs/checkout",
     endpoints: [
       { method: "POST", path: "/v2/payments/checkout", summary: "Create a Stripe PaymentIntent for a challenge.", auth: "user", request: `{ "tier_id": "tier_25k", "market": "crypto", "asset_class": "crypto", "account_size": 25000, "amount_cents": 19900, "currency": "usd" }`, response: `{ "payment_id": "pay_...", "stripe_payment_intent_id": "pi_...", "client_secret": "pi_..._secret_...", "amount_cents": 19900, "currency": "usd", "status": "requires_payment_method" }` },
-      { method: "POST", path: "/v2/payments/free", summary: "Provision a zero-amount (free-tier) account.", auth: "user", request: `{ "tier_id": "tier_demo", "asset_class": "crypto", "account_size": 10000 }` },
-      { method: "GET", path: "/v2/payments/prop-accounts", summary: "List the user's prop accounts.", auth: "user", response: `[ { "id": "prop_...", "tier_id": "tier_25k", "asset_class": "crypto", "account_size": 25000, "status": "active", "subaccount_uuid": "...", "synthetic_hotkey": "5F..." } ]`, runOp: "payments.listPropAccounts" },
+      { method: "POST", path: "/v2/payments/free", summary: "Provision a zero-amount (free-tier) account.", auth: "user", request: `{ "tier_id": "tier_demo", "asset_class": "crypto", "account_size": 10000 }`, note: "Returns 200 in BOTH the success and the failure case \u2014 200 does not mean provisioned. Branch on the response status: \"evaluation\" is provisioned, \"subaccount_failed\" means the entity-miner call failed and subaccount_id / subaccount_uuid / synthetic_hotkey are null." },
+      { method: "GET", path: "/v2/payments/prop-accounts", summary: "List the user's prop accounts.", auth: "user", response: `[ { "id": "prop_...", "tier_id": "tier_25k", "asset_class": "crypto", "account_size": 25000, "status": "evaluation", "subaccount_uuid": "...", "synthetic_hotkey": "5F..." } ]`, runOp: "payments.listPropAccounts" },
       { method: "GET", path: "/v2/payments/prop-accounts/{prop_account_id}", summary: "Get one prop account.", auth: "user" },
       { method: "GET", path: "/v2/payments/{payment_id}", summary: "Get a payment by id.", auth: "user", response: `{ "id": "pay_...", "stripe_payment_intent_id": "pi_...", "amount_cents": 19900, "currency": "usd", "status": "succeeded", "tier_id": "tier_25k", "market": "crypto", "prop_account_id": "prop_..." }` },
     ],
@@ -162,7 +176,7 @@ export const API_CATALOG: ApiArea[] = [
     docHref: "/docs/payouts",
     endpoints: [
       { method: "GET", path: "/v2/payouts/estimate", summary: "Estimated payout from validator HWM profit.", auth: "user", note: "Optional X-Prop-Account header.", response: `{ "amount_usd": 412.5, "amount_cents": 41250, "currency": "usd", "available": true }`, runOp: "payouts.estimate" },
-      { method: "GET", path: "/v2/payouts", summary: "List the user's payouts.", auth: "user", response: `[ { "id": "po_...", "amount_cents": 41250, "currency": "usd", "status": "paid", "stripe_transfer_id": "tr_...", "completed_at": "..." } ]`, runOp: "payouts.list" },
+      { method: "GET", path: "/v2/payouts", summary: "List the user's payouts.", auth: "user", response: `[ { "id": "po_...", "amount_cents": 41250, "currency": "usd", "status": "completed", "stripe_transfer_id": "tr_...", "completed_at": "..." } ]`, runOp: "payouts.list" },
       { method: "POST", path: "/v2/payouts/request", summary: "Request a payout (creates a pending row).", auth: "platform", note: "Requires the payouts:write scope, which the api superscope does not grant. Partner apps receive 403 V2_SCOPE_MISSING.", request: `{ "amount_cents": 41250, "prop_account_id": "prop_..." }` },
       { method: "POST", path: "/v2/payouts/{payout_id}/submit", summary: "Submit a pending payout to Stripe — moves money.", auth: "platform", note: "Platform-operator step. Not callable by a partner tenant." },
     ],
@@ -170,10 +184,10 @@ export const API_CATALOG: ApiArea[] = [
   {
     id: "api-keys",
     title: "API keys",
-    description: "Issue scoped, revocable programmatic credentials.",
+    description: "Mint, list and revoke API-key records. These keys do not authenticate any request yet.",
     docHref: "/docs/api-keys",
     endpoints: [
-      { method: "POST", path: "/v2/api-keys", summary: "Mint an API key (secret shown once).", auth: "user", request: `{ "label": "Trading bot", "prop_account_id": "prop_..." }`, response: `{ "id": "key_...", "label": "Trading bot", "key_id": "hskk_...", "key_secret": "shown once", "prop_account_id": "prop_..." }` },
+      { method: "POST", path: "/v2/api-keys", summary: "Mint an API key record (secret shown once).", auth: "user", note: "Bookkeeping only \u2014 there is no API-key authentication path. Every /v2 call still needs the app OAuth bearer plus the user\u2019s X-Session-Token, and prop_account_id is recorded but not enforced.", request: `{ "label": "Trading bot", "prop_account_id": "prop_..." }`, response: `{ "id": "key_...", "label": "Trading bot", "key_id": "hskk_...", "key_secret": "shown once", "prop_account_id": "prop_..." }` },
       { method: "GET", path: "/v2/api-keys", summary: "List API keys.", auth: "user", response: `[ { "id": "key_...", "label": "Trading bot", "key_id": "hskk_...", "revoked_at": null } ]`, runOp: "apiKeys.list" },
       { method: "DELETE", path: "/v2/api-keys/{key_id}", summary: "Revoke an API key.", auth: "user", response: `{ "revoked": true }` },
     ],
@@ -245,8 +259,8 @@ export const API_CATALOG: ApiArea[] = [
       { method: "GET", path: "/v2/trading/positions", summary: "Open positions.", auth: "user", runOp: "trading.positions" },
       { method: "GET", path: "/v2/trading/orders", summary: "Pending limit/stop orders.", auth: "user", runOp: "trading.orders" },
       { method: "GET", path: "/v2/trading/history", summary: "Closed positions.", auth: "user", runOp: "trading.history" },
-      { method: "GET", path: "/v2/trading/balance", summary: "Account size & balance metrics.", auth: "user", response: `{ "account_size": 25000, "status": "active", "subaccount_info": {} }`, runOp: "trading.balance" },
-      { method: "GET", path: "/v2/trading/desk-poll", summary: "Bundle: positions + orders + history + balance.", auth: "user", response: `{ "positions": [], "orders": [], "history": [], "balance": { "account_size": 25000, "status": "active" } }`, runOp: "trading.deskPoll" },
+      { method: "GET", path: "/v2/trading/balance", summary: "Account size & balance metrics.", auth: "user", response: `{ "account_size": 25000, "status": "evaluation", "subaccount_info": {} }`, runOp: "trading.balance" },
+      { method: "GET", path: "/v2/trading/desk-poll", summary: "Bundle: positions + orders + history + balance.", auth: "user", response: `{ "positions": [], "orders": [], "history": [], "balance": { "account_size": 25000, "status": "evaluation" } }`, runOp: "trading.deskPoll" },
       { method: "GET", path: "/v2/trading/stream", summary: "Server-sent event snapshot stream (?interval_ms=).", auth: "user", note: "SSE: 'snapshot' events with positions/orders/account_size." },
     ],
   },

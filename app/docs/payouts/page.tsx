@@ -124,6 +124,13 @@ export default function PayoutsDocsPage() {
 
       <DocSection title="Payout history">
         <Endpoint method="GET" path="/v2/payouts" auth="user">
+          <p className="text-sm text-muted-foreground">
+            <code>status</code> is one of <code>pending</code> (row created),{" "}
+            <code>submitted</code> (transfer cut),{" "}
+            <code>completed</code> (Stripe confirmed <code>transfer.created</code>)
+            or <code>failed</code> (<code>transfer.reversed</code>). There is no{" "}
+            <code>paid</code> state.
+          </p>
           <CodeBlock
             lang="json"
             filename="200 OK"
@@ -132,7 +139,7 @@ export default function PayoutsDocsPage() {
     "id": "po_...",
     "amount_cents": 41250,
     "currency": "usd",
-    "status": "paid",
+    "status": "completed",
     "stripe_transfer_id": "tr_...",
     "failure_reason": null,
     "requested_at": "2026-06-20T00:00:00Z",

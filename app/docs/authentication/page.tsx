@@ -94,28 +94,26 @@ export default function AuthDocsPage() {
         </Endpoint>
       </DocSection>
 
-      <DocSection title="App token (OAuth client credentials)" description="Exchange your client_id/client_secret for a short-lived bearer token. Do this server-side only — never expose the secret to the browser.">
+      <DocSection title="App token (OAuth client credentials)" description="Exchange your client_id/client_secret for a short-lived bearer token. The body is form-encoded (application/x-www-form-urlencoded), per RFC 6749 — a JSON body is rejected with 422. Do this server-side only — never expose the secret to the browser.">
         <Endpoint method="POST" path="/v2/oauth/token" auth="public">
           <ParamTable
-            title="Request body"
+            title="Form fields"
             rows={[
               { name: "grant_type", type: "string", required: true, desc: '"client_credentials"' },
               { name: "client_id", type: "string", required: true, desc: "Your app's client id (hsc_…)" },
               { name: "client_secret", type: "string", required: true, desc: "Your app's secret (hsk_…)" },
-              { name: "scope", type: "string", required: false, desc: 'Defaults to "api"' },
+              { name: "scope", type: "string", required: false, desc: "Space-separated. Omit to receive every scope your app holds. Scopes your app lacks are silently dropped from the grant \u2014 400 V2_INVALID_SCOPE comes back only when none of the requested scopes is allowed. Read the scope field of the token response to see what was actually granted" },
             ]}
           />
           <CodeBlock
             lang="bash"
             filename="curl"
             code={`curl -X POST http://localhost:8000/v2/oauth/token \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "grant_type": "client_credentials",
-    "client_id": "hsc_...",
-    "client_secret": "hsk_...",
-    "scope": "api"
-  }'`}
+  -H "Content-Type: application/x-www-form-urlencoded" \\
+  -d grant_type=client_credentials \\
+  -d client_id=hsc_... \\
+  -d client_secret=hsk_... \\
+  -d scope=api`}
           />
           <CodeBlock
             lang="json"

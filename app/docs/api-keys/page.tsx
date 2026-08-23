@@ -17,10 +17,22 @@ export default function ApiKeysDocsPage() {
           <DocsLink href="/dashboard/api-keys" label="Open in app" />
         </div>
         <p className="text-lg text-muted-foreground">
-          Issue scoped programmatic credentials so a trader (or their bot) can
-          call the API directly — optionally bound to a single prop account.
+          Mint, list and revoke API-key records for your traders, optionally
+          tagged with a single prop account.
         </p>
       </header>
+
+      <Callout type="warning" title="These keys are a record only — they do not authenticate">
+        The API does <strong>not</strong> yet accept an API key as a credential.
+        There is no API-key authentication path: every <code>/v2</code> request,
+        a trader&apos;s bot included, must still present your app&apos;s OAuth
+        bearer token plus that user&apos;s <code>X-Session-Token</code>. A request
+        carrying only a <code>key_id</code>/<code>key_secret</code> is rejected{" "}
+        <code>401 V2_AUTH_MISSING</code>. <code>prop_account_id</code> is stored
+        but enforced nowhere, and <code>last_used_at</code> is never written.
+        Treat these endpoints as bookkeeping until key auth ships — do not build a
+        bot-credential feature on them.
+      </Callout>
 
       <DocSection title="Create a key">
         <Endpoint method="POST" path="/v2/api-keys" auth="user">
@@ -28,7 +40,7 @@ export default function ApiKeysDocsPage() {
             title="Request body"
             rows={[
               { name: "label", type: "string", required: true, desc: "Human-readable name" },
-              { name: "prop_account_id", type: "string", required: false, desc: "Scope the key to one account" },
+              { name: "prop_account_id", type: "string", required: false, desc: "Recorded on the key row as a label. Not enforced anywhere" },
             ]}
           />
           <CodeBlock
@@ -37,8 +49,8 @@ export default function ApiKeysDocsPage() {
             code={`{
   "id": "key_...",
   "label": "Trading bot",
-  "key_id": "hsk_live_...",
-  "key_secret": "sk_live_...   // shown ONCE — store it now",
+  "key_id": "hskk_A1b2C3d4",
+  "key_secret": "opaque-random-string   // shown ONCE — store it now",
   "prop_account_id": "prop_..."
 }`}
           />
@@ -55,7 +67,7 @@ export default function ApiKeysDocsPage() {
             lang="json"
             filename="200 OK"
             code={`[
-  { "id": "key_...", "label": "Trading bot", "key_id": "hsk_live_...", "revoked_at": null }
+  { "id": "key_...", "label": "Trading bot", "key_id": "hskk_A1b2C3d4", "revoked_at": null }
 ]`}
           />
           <ApiTester operation="apiKeys.list" method="GET" path="/v2/api-keys" />
