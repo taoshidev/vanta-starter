@@ -37,9 +37,13 @@ type ConnectAccount = {
 export function PayoutsClient({
   connectAccounts,
   payouts,
+  loadError,
 }: {
   connectAccounts: ConnectAccount[];
   payouts: PayoutResponse[];
+  /** Set when the server render couldn't reach the API — distinguishes a
+   *  failure from a genuinely empty account. */
+  loadError?: { code: string; message?: string };
 }) {
   const [busy, setBusy] = useState(false);
   const [estimate, setEstimate] = useState<{ amount_usd: number; available: boolean } | null>(null);
@@ -53,18 +57,32 @@ export function PayoutsClient({
 
   // Stripe redirects back here after Connect onboarding with
   // ?onboarding=return (finished) or ?onboarding=refresh (link expired).
+  //
+  // These two URLs are registered per-tenant on the API side (an operator sets
+  // connect_return_url / connect_refresh_url on your app row), so this exact
+  // path is the contract — see app/docs/payouts.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const stage = params.get("onboarding");
     if (!stage) return;
-    if (stage === "return") {
-      toast.success("Stripe onboarding complete. Refreshing your account status…");
-      router.refresh();
-    } else if (stage === "refresh") {
-      toast.error("That onboarding link expired. Click “Manage” to continue.");
-    }
+
     // Strip the query so a manual refresh doesn't re-trigger the toast.
     window.history.replaceState(null, "", "/dashboard/payouts");
+
+    if (stage === "refresh") {
+      toast.error("That onboarding link expired. Click “Manage” to continue.");
+      return;
+    }
+
+    toast.success("Stripe onboarding complete. Refreshing your account status…");
+    // The user lands here the instant Stripe finishes, but outside local dev the
+    // API only learns the account is payout-enabled from Stripe's
+    // `account.updated` webhook — which usually arrives a beat later. One
+    // immediate refresh would therefore render stale "pending" state. Re-check a
+    // couple of times, then stop; the page is still correct on any later reload.
+    const timers = [3_000, 8_000].map((ms) => setTimeout(() => router.refresh(), ms));
+    router.refresh();
+    return () => timers.forEach(clearTimeout);
   }, [router]);
 
   async function link() {
@@ -72,8 +90,11 @@ export function PayoutsClient({
     const r = await createConnectAccountAction("US");
     setBusy(false);
     if (r.ok && r.data) {
-      window.open(r.data.onboarding_url, "_blank", "noopener");
-      toast.success("Opening Stripe onboarding in a new tab.");
+      // Navigate this tab rather than opening a new one: Stripe returns the
+      // user to the tenant's registered return_url, which is this page. In a
+      // new tab the return would land there and the original tab would sit on
+      // stale state forever.
+      window.location.href = r.data.onboarding_url;
     } else if (!r.ok) {
       toast.error(friendlyError(r.code, r.message));
     }
@@ -82,7 +103,7 @@ export function PayoutsClient({
   async function refresh(acct: string) {
     const r = await refreshConnectLinkAction(acct);
     if (r.ok && r.data) {
-      window.open(r.data.onboarding_url, "_blank", "noopener");
+      window.location.href = r.data.onboarding_url;
     } else if (!r.ok) {
       toast.error(friendlyError(r.code, r.message));
     }
@@ -90,6 +111,14 @@ export function PayoutsClient({
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
+      {loadError && (
+        <div
+          role="alert"
+          className="lg:col-span-2 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {friendlyError(loadError.code, loadError.message)}
+        </div>
+      )}
       <Card className="lg:col-span-2">
         <CardHeader className="flex-row items-center justify-between space-y-0">
           <div>

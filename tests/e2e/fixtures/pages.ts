@@ -90,8 +90,16 @@ export class DocsPage {
     await this.page.goto(path);
   }
 
+  /** A link in the docs sidebar specifically.
+   *
+   * Scoped to the sidebar nav on purpose: several of these labels also appear
+   * as cards or inline prose on /docs, so an unscoped getByRole matched two
+   * elements and failed Playwright strict mode.
+   */
   sidebarLink(name: string): Locator {
-    return this.page.getByRole("link", { name, exact: true });
+    return this.page
+      .getByRole("navigation", { name: "Documentation" })
+      .getByRole("link", { name, exact: true });
   }
 }
 

@@ -57,9 +57,9 @@ SESSION_ENCRYPTION_KEY=<openssl rand -base64 32>
 # Stripe (test mode)
 V2_STRIPE_SECRET_KEY=sk_test_...
 V2_STRIPE_PUBLISHABLE_KEY=pk_test_...
-V2_STRIPE_WEBHOOK_SECRET=whsec_...
-V2_STRIPE_CONNECT_RETURN_URL=http://localhost:3000/dashboard/payouts
-V2_STRIPE_CONNECT_REFRESH_URL=http://localhost:3000/dashboard/payouts
+# Comma-separated: a Connect platform needs a second Stripe endpoint (and
+# secret) for connected-account events. All configured secrets are tried.
+V2_STRIPE_WEBHOOK_SECRET=whsec_account,whsec_connect
 
 # Sumsub KYC
 V2_SUMSUB_APP_TOKEN=...
@@ -101,6 +101,24 @@ open http://localhost:8000/admin`}
           Registering an app returns a <code>client_id</code> and a{" "}
           <code>client_secret</code> shown <strong>once</strong>. Copy them into
           the frontend env below.
+        </Callout>
+        <Callout type="warning" title="Give the operator your Connect return URLs">
+          Stripe sends your users back to <em>your</em> site after Connect
+          onboarding, so the return and refresh URLs are stored per tenant on
+          your app row — they are not an API-wide setting. When you register the
+          app, set both to this app&apos;s payouts page:
+          <br />
+          <code>connect_return_url</code> ={" "}
+          <code>{"<your-origin>"}/dashboard/payouts?onboarding=return</code>
+          <br />
+          <code>connect_refresh_url</code> ={" "}
+          <code>{"<your-origin>"}/dashboard/payouts?onboarding=refresh</code>
+          <br />
+          An operator sets them in the admin console or via{" "}
+          <code>PATCH /v2/admin/apps/{"{app_id}"}</code>. Until they are set,{" "}
+          <code>POST /v2/connect/accounts</code> returns{" "}
+          <code>409 V2_CONNECT_URLS_NOT_CONFIGURED</code> and no user can link a
+          bank account.
         </Callout>
       </DocSection>
 

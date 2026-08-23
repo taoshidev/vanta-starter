@@ -30,7 +30,16 @@ type Endpoint = {
   description: string | null;
 };
 
-const EVENT_OPTIONS = ["payment.succeeded", "payment.failed", "kyc.updated", "payout.completed", "*"];
+// Keep in sync with the API's emitted set (services/webhooks_out.py) and with
+// the table in app/docs/webhooks.
+const EVENT_OPTIONS = [
+  "payment.succeeded",
+  "payment.failed",
+  "kyc.updated",
+  "payout.completed",
+  "payout.failed",
+  "*",
+];
 
 export function WebhooksClient({ endpoints: initial }: { endpoints: Endpoint[] }) {
   const [endpoints, setEndpoints] = useState(initial);
@@ -166,7 +175,7 @@ export function WebhooksClient({ endpoints: initial }: { endpoints: Endpoint[] }
           <DialogHeader>
             <DialogTitle>Signing secret</DialogTitle>
             <DialogDescription>
-              Use this secret to verify the signature on incoming webhooks. It's shown only once.
+              Use this secret to verify the signature on incoming webhooks. It&apos;s shown only once.
             </DialogDescription>
           </DialogHeader>
           <code className="block break-all rounded-lg border border-border bg-background/60 p-3 font-mono text-xs">

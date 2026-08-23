@@ -26,10 +26,22 @@ export default function PayoutsDocsPage() {
 
       <DocSection title="How it works">
         <ol className="list-inside list-decimal space-y-1.5 text-sm text-muted-foreground">
-          <li>Create a Connect account → redirect the user to the Stripe onboarding link.</li>
-          <li>Stripe sends them back to <code>/dashboard/payouts</code> when done.</li>
-          <li>The API self-heals status from Stripe on the next list call (webhooks don&apos;t reach localhost).</li>
-          <li>Read the estimated payout owed; transfer it once <code>payouts_enabled</code> is true.</li>
+          <li>Create a Connect account → send the user to the Stripe onboarding link.</li>
+          <li>
+            Stripe returns them to the <strong>return URL registered on your app
+            row</strong> — in this app, <code>/dashboard/payouts?onboarding=return</code>.
+          </li>
+          <li>
+            The API learns the account is payout-enabled from Stripe&apos;s{" "}
+            <code>account.updated</code> webhook. In local dev only, it also
+            self-heals from Stripe on the next list call, since webhooks
+            don&apos;t reach localhost.
+          </li>
+          <li>
+            Read the estimated payout owed. <strong>Disbursement is run by the
+            platform</strong>, not by your app — there is no partner-callable
+            endpoint to move money.
+          </li>
         </ol>
       </DocSection>
 
@@ -71,7 +83,7 @@ export default function PayoutsDocsPage() {
     "stripe_account_id": "acct_...",
     "status": "active",
     "payouts_enabled": true,
-    "charges_enabled": true,
+    "charges_enabled": false,
     "details_submitted": true,
     "bank_name": "STRIPE TEST BANK",
     "last4": "6789",
@@ -80,6 +92,14 @@ export default function PayoutsDocsPage() {
 ]`}
           />
           <ApiTester operation="connect.list" method="GET" path="/v2/connect/accounts" />
+          <Callout type="info" title="charges_enabled stays false — that's correct">
+            These are payout-only Express accounts: the platform requests the{" "}
+            <code>transfers</code> capability and nothing else, because the
+            platform takes the payments, not the trader. Watch{" "}
+            <code>payouts_enabled</code> — that is the flag that governs whether
+            money can move, and <code>status</code> reads{" "}
+            <code>active</code> once it flips.
+          </Callout>
         </Endpoint>
       </DocSection>
 
