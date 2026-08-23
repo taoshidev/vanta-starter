@@ -133,6 +133,12 @@ export default function AuthDocsPage() {
         </Callout>
       </DocSection>
 
+      <DocSection title="Programmatic trading keys" description="A third credential exists for one surface only: per-trader API keys authenticate /v2/trading (writes, reads, SSE) on their own via the X-Api-Key header, so a trader's bot never holds your client secret. Everything else on this page is unchanged for keys — they cannot reach any other endpoint. See the API keys page for minting, binding and revocation.">
+        <p className="text-sm text-muted-foreground">
+          Details and examples: <a href="/docs/api-keys">/docs/api-keys</a>.
+        </p>
+      </DocSection>
+
       <DocSection title="End-user sessions" description="Once your app is authenticated, you create and authenticate the people who use it. A successful signup verification or login returns a session_token to send as X-Session-Token on subsequent calls.">
         <Endpoint method="POST" path="/v2/auth/signup" auth="app">
           <CodeBlock
