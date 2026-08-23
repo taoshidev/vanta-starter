@@ -143,9 +143,12 @@ export default function DocsIndexPage() {
             <p className="mt-4 text-xs text-muted-foreground">
               Running locally? You can self-approve from the admin console — see
               the <Link href="/docs/quickstart">Quickstart</Link>. Confirm an
-              app&apos;s <code>client_id</code> and scopes anytime via{" "}
-              <code>GET /v2/apps/me</code>; the secret is rotate-only and never
-              readable again.
+              app&apos;s scopes and tenant identity anytime via{" "}
+              <code>GET /v2/apps/me</code>. It does <strong>not</strong> return
+              the <code>client_id</code> or the secret — both are shown only once,
+              at the one-time reveal link, and <code>app_id</code> is a bare UUID,
+              not the <code>hsc_</code>-prefixed <code>client_id</code>. The
+              secret is rotate-only and never readable again.
             </p>
           </div>
         </div>
@@ -162,10 +165,13 @@ export default function DocsIndexPage() {
           <CodeBlock
             lang="bash"
             filename="Your first request"
-            code={`# 1. Exchange your app credentials for an access token
+            code={`# 1. Exchange your app credentials for an access token (form-encoded, not JSON)
 curl -X POST http://localhost:8000/v2/oauth/token \\
-  -H "Content-Type: application/json" \\
-  -d '{"grant_type":"client_credentials","client_id":"hsc_...","client_secret":"hsk_...","scope":"api"}'
+  -H "Content-Type: application/x-www-form-urlencoded" \\
+  -d grant_type=client_credentials \\
+  -d client_id=hsc_... \\
+  -d client_secret=hsk_... \\
+  -d scope=api
 
 # 2. Use the token to call the API
 curl http://localhost:8000/v2/auth/me \\

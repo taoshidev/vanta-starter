@@ -97,10 +97,47 @@ await stripe.confirmPayment({ elements, redirect: "if_required" });`}
             filename="Request body"
             code={`{ "tier_id": "tier_demo", "asset_class": "crypto", "account_size": 10000 }`}
           />
+          <CodeBlock
+            lang="json"
+            filename="200 OK — provisioned"
+            code={`{
+  "id": "prop_...",
+  "status": "evaluation",
+  "subaccount_id": 42,
+  "subaccount_uuid": "9c1...",
+  "synthetic_hotkey": "5F..."
+}`}
+          />
+          <CodeBlock
+            lang="json"
+            filename="200 OK — NOT provisioned"
+            code={`{
+  "id": "prop_...",
+  "status": "subaccount_failed",
+  "subaccount_id": null,
+  "subaccount_uuid": null,
+  "synthetic_hotkey": null
+}`}
+          />
         </Endpoint>
+        <Callout type="warning" title="200 does not mean provisioned">
+          This endpoint returns <code>200</code> with a prop-account body in{" "}
+          <strong>both</strong> the success and the failure case, so you must
+          branch on the response <code>status</code> rather than on the HTTP code.
+          A <code>subaccount_failed</code> account has{" "}
+          <code>subaccount_id</code>, <code>subaccount_uuid</code> and{" "}
+          <code>synthetic_hotkey</code> set to <code>null</code> and can never
+          trade — every <code>/v2/trading/*</code> call, reads included, returns{" "}
+          <code>409 V2_SUBACCOUNT_NOT_READY</code>, because the read routes
+          resolve the prop account through the same guard as the writes. The
+          API answers 200 rather than 5xx on purpose: raising would roll back the
+          request session and destroy the row that records the attempt. Do not
+          auto-retry — surface the account for operator recovery via{" "}
+          <code>GET /v2/payments/prop-accounts/failed</code>.
+        </Callout>
       </DocSection>
 
-      <DocSection title="List prop accounts">
+      <DocSection title="List prop accounts" description="status is one of: provisioning (subaccount create in flight), evaluation (provisioned and tradeable), funded, eliminated (both set by POST /v2/lifecycle/sync/{prop_account_id}), and subaccount_failed (charged but not provisioned). It is never “active” — gate your trading entry point on evaluation or funded.">
         <Endpoint method="GET" path="/v2/payments/prop-accounts" auth="user">
           <CodeBlock
             lang="json"
@@ -111,7 +148,7 @@ await stripe.confirmPayment({ elements, redirect: "if_required" });`}
     "tier_id": "tier_25k",
     "asset_class": "crypto",
     "account_size": 25000,
-    "status": "active",
+    "status": "evaluation",
     "subaccount_id": 42,
     "subaccount_uuid": "9c1...",
     "synthetic_hotkey": "5F...",
