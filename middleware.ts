@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { PORTAL_DOCS_ONLY, isPortalBlockedPath } from "@/lib/portal";
+// Relative, not "@/lib/portal": Vercel's Edge Function module trace fails to
+// resolve the tsconfig path alias when the project has no framework preset
+// (observed on the vanta-developer-portal CLI deploy: 'referencing unsupported
+// modules: @/lib/portal'). A relative import resolves under every build config.
+import { PORTAL_DOCS_ONLY, isPortalBlockedPath } from "./lib/portal";
 
 /**
  * Portal mode's route gate. The demo surface (dashboard, auth pages, BFF API
