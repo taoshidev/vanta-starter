@@ -4,6 +4,7 @@ export type AuthKind =
   | "public"
   | "app"
   | "user"
+  | "user-key"
   | "admin"
   | "partner"
   | "partner-trader"
@@ -15,6 +16,7 @@ export const AUTH_LABEL: Record<AuthKind, string> = {
   public: "Public",
   app: "App token",
   user: "User session",
+  "user-key": "Session or API key",
   admin: "Admin",
   partner: "Partner key",
   "partner-trader": "Partner + Trader-ID",
@@ -184,10 +186,10 @@ scope=api`,
   {
     id: "api-keys",
     title: "API keys",
-    description: "Mint, list and revoke API-key records. These keys do not authenticate any request yet.",
+    description: "Per-trader credentials for programmatic trading: X-Api-Key: <key_id>.<key_secret> authenticates the /v2/trading surface on its own.",
     docHref: "/docs/api-keys",
     endpoints: [
-      { method: "POST", path: "/v2/api-keys", summary: "Mint an API key record (secret shown once).", auth: "user", note: "Bookkeeping only \u2014 there is no API-key authentication path. Every /v2 call still needs the app OAuth bearer plus the user\u2019s X-Session-Token, and prop_account_id is recorded but not enforced.", request: `{ "label": "Trading bot", "prop_account_id": "prop_..." }`, response: `{ "id": "key_...", "label": "Trading bot", "key_id": "hskk_...", "key_secret": "shown once", "prop_account_id": "prop_..." }` },
+      { method: "POST", path: "/v2/api-keys", summary: "Mint an API key (secret shown once).", auth: "user", note: "The response\u2019s api_key field is the composite credential to send as X-Api-Key. Keys work only on /v2/trading (writes, reads, SSE) with scopes capped at reads+trading; management stays session-only so a leaked key cannot mint more. prop_account_id pins the key to one owned account (403 V2_API_KEY_ACCOUNT_MISMATCH on any other).", request: `{ "label": "Trading bot", "prop_account_id": "prop_..." }`, response: `{ "id": "key_...", "label": "Trading bot", "key_id": "hskk_...", "key_secret": "shown once", "api_key": "hskk_....<secret>", "prop_account_id": "prop_..." }` },
       { method: "GET", path: "/v2/api-keys", summary: "List API keys.", auth: "user", response: `[ { "id": "key_...", "label": "Trading bot", "key_id": "hskk_...", "revoked_at": null } ]`, runOp: "apiKeys.list" },
       { method: "DELETE", path: "/v2/api-keys/{key_id}", summary: "Revoke an API key.", auth: "user", response: `{ "revoked": true }` },
     ],
@@ -246,22 +248,22 @@ scope=api`,
   {
     id: "trading",
     title: "Trading",
-    description: "Submit orders, manage positions, and read the live desk.",
+    description: "Submit orders, manage positions, and read the live desk. Session (bearer + X-Session-Token) or a per-trader X-Api-Key both authenticate here.",
     docHref: "/docs/trading",
     endpoints: [
-      { method: "POST", path: "/v2/trading/orders", summary: "Submit an order.", auth: "user", note: "X-Prop-Account header.", request: `{ "trade_pair": "BTCUSD", "order_type": "LONG", "leverage": 1.0, "execution_type": "MARKET" }`, response: `{ "success": true, "order_uuid": "ord_...", "processing_time": 0.42 }` },
-      { method: "POST", path: "/v2/trading/orders/close", summary: "Market-close one position.", auth: "user", request: `{ "trade_pair": "BTCUSD" }` },
-      { method: "POST", path: "/v2/trading/orders/bulk-close", summary: "Close many positions at once.", auth: "user", request: `{ "position_uuids": ["pos_...", "pos_..."] }` },
-      { method: "POST", path: "/v2/trading/orders/tp-sl", summary: "Attach/replace take-profit & stop-loss.", auth: "user", request: `{ "trade_pair": "BTCUSD", "take_profit": 75000, "stop_loss": 60000 }` },
-      { method: "POST", path: "/v2/trading/orders/{order_uuid}/edit", summary: "Edit a resting order.", auth: "user" },
-      { method: "DELETE", path: "/v2/trading/orders/{order_uuid}", summary: "Cancel a resting order (?trade_pair=).", auth: "user" },
-      { method: "GET", path: "/v2/trading/orders/{order_uuid}", summary: "Order status lookup.", auth: "user" },
-      { method: "GET", path: "/v2/trading/positions", summary: "Open positions.", auth: "user", runOp: "trading.positions" },
-      { method: "GET", path: "/v2/trading/orders", summary: "Pending limit/stop orders.", auth: "user", runOp: "trading.orders" },
-      { method: "GET", path: "/v2/trading/history", summary: "Closed positions.", auth: "user", runOp: "trading.history" },
-      { method: "GET", path: "/v2/trading/balance", summary: "Account size & balance metrics.", auth: "user", response: `{ "account_size": 25000, "status": "evaluation", "subaccount_info": {} }`, runOp: "trading.balance" },
-      { method: "GET", path: "/v2/trading/desk-poll", summary: "Bundle: positions + orders + history + balance.", auth: "user", response: `{ "positions": [], "orders": [], "history": [], "balance": { "account_size": 25000, "status": "evaluation" } }`, runOp: "trading.deskPoll" },
-      { method: "GET", path: "/v2/trading/stream", summary: "Server-sent event snapshot stream (?interval_ms=).", auth: "user", note: "SSE: 'snapshot' events with positions/orders/account_size." },
+      { method: "POST", path: "/v2/trading/orders", summary: "Submit an order.", auth: "user-key", note: "X-Prop-Account header.", request: `{ "trade_pair": "BTCUSD", "order_type": "LONG", "leverage": 1.0, "execution_type": "MARKET" }`, response: `{ "success": true, "order_uuid": "ord_...", "processing_time": 0.42 }` },
+      { method: "POST", path: "/v2/trading/orders/close", summary: "Market-close one position.", auth: "user-key", request: `{ "trade_pair": "BTCUSD" }` },
+      { method: "POST", path: "/v2/trading/orders/bulk-close", summary: "Close many positions at once.", auth: "user-key", request: `{ "position_uuids": ["pos_...", "pos_..."] }` },
+      { method: "POST", path: "/v2/trading/orders/tp-sl", summary: "Attach/replace take-profit & stop-loss.", auth: "user-key", request: `{ "trade_pair": "BTCUSD", "take_profit": 75000, "stop_loss": 60000 }` },
+      { method: "POST", path: "/v2/trading/orders/{order_uuid}/edit", summary: "Edit a resting order.", auth: "user-key" },
+      { method: "DELETE", path: "/v2/trading/orders/{order_uuid}", summary: "Cancel a resting order (?trade_pair=).", auth: "user-key" },
+      { method: "GET", path: "/v2/trading/orders/{order_uuid}", summary: "Order status lookup.", auth: "user-key" },
+      { method: "GET", path: "/v2/trading/positions", summary: "Open positions.", auth: "user-key", runOp: "trading.positions" },
+      { method: "GET", path: "/v2/trading/orders", summary: "Pending limit/stop orders.", auth: "user-key", runOp: "trading.orders" },
+      { method: "GET", path: "/v2/trading/history", summary: "Closed positions.", auth: "user-key", runOp: "trading.history" },
+      { method: "GET", path: "/v2/trading/balance", summary: "Account size & balance metrics.", auth: "user-key", response: `{ "account_size": 25000, "status": "evaluation", "subaccount_info": {} }`, runOp: "trading.balance" },
+      { method: "GET", path: "/v2/trading/desk-poll", summary: "Bundle: positions + orders + history + balance.", auth: "user-key", response: `{ "positions": [], "orders": [], "history": [], "balance": { "account_size": 25000, "status": "evaluation" } }`, runOp: "trading.deskPoll" },
+      { method: "GET", path: "/v2/trading/stream", summary: "Server-sent event snapshot stream (?interval_ms=).", auth: "user-key", note: "SSE: 'snapshot' events with positions/orders/account_size." },
     ],
   },
   {

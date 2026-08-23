@@ -35,6 +35,13 @@ export default function TradingDocsPage() {
         <code>400 Bad Request</code>.
       </Callout>
 
+      <Callout type="tip" title="Bots: authenticate with an API key instead">
+        Every endpoint on this page also accepts{" "}
+        <code>X-Api-Key: &lt;key_id&gt;.&lt;key_secret&gt;</code> on its own — no
+        bearer or session token needed. Mint one per trader at{" "}
+        <a href="/docs/api-keys">/docs/api-keys</a>.
+      </Callout>
+
       <DocSection title="Submit an order">
         <Endpoint method="POST" path="/v2/trading/orders" auth="user">
           <ParamTable
