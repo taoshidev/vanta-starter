@@ -12,6 +12,8 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
+import { PORTAL_DOCS_ONLY } from "@/lib/portal";
+
 import { hscConfig } from "./config";
 import { getAppAccessToken } from "./oauth";
 
@@ -34,6 +36,16 @@ type Init = RequestInit & {
 };
 
 async function hsc<T = unknown>(path: string, init: Init = {}): Promise<T> {
+  if (PORTAL_DOCS_ONLY) {
+    // Server-side belt to the middleware's braces: the portal deployment has
+    // no credentials, so no authed call can succeed — fail it deliberately
+    // with a clear message instead of a confusing OAuth error.
+    throw new HscApiError(
+      404,
+      "PORTAL_MODE",
+      "Not available on the developer portal. Use the sandbox to try live flows.",
+    );
+  }
   const token = await getAppAccessToken();
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);

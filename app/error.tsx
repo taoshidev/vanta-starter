@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { RotateCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PORTAL_DOCS_ONLY } from "@/lib/portal";
 
 export default function GlobalError({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {
@@ -15,14 +16,19 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
       <div className="text-sm font-medium text-primary">Something went wrong</div>
       <h1 className="mt-2 text-2xl font-semibold tracking-tight">An unexpected error occurred</h1>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        We hit a snag rendering this page. You can retry, or head back to your dashboard.
+        We hit a snag rendering this page. You can retry, or head back to{" "}
+        {PORTAL_DOCS_ONLY ? "the docs" : "your dashboard"}.
       </p>
       <div className="mt-6 flex items-center gap-3">
         <Button onClick={reset}>
           <RotateCw /> Try again
         </Button>
         <Button variant="outline" asChild>
-          <a href="/dashboard">Go to dashboard</a>
+          {PORTAL_DOCS_ONLY ? (
+            <a href="/docs">Go to the docs</a>
+          ) : (
+            <a href="/dashboard">Go to dashboard</a>
+          )}
         </Button>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CheckCircle2, Mail } from "lucide-react";
 
 import { requestAccessAction } from "@/app/actions/app-requests";
+import { PORTAL_DOCS_ONLY, SANDBOX_URL } from "@/lib/portal";
 import { AuthShell } from "@/components/auth-shell";
 import { ErrorBanner, Field, SubmitButton } from "@/components/Form";
 import { Label } from "@/components/ui/label";
@@ -59,12 +60,24 @@ export default function RequestAccessPage() {
       title="Request API access"
       subtitle="Tell us about your app — we'll review and send your credentials."
       footer={
-        <>
-          Already have credentials?{" "}
-          <Link href="/login" className="font-medium text-primary hover:underline">
-            Sign in
-          </Link>
-        </>
+        PORTAL_DOCS_ONLY ? (
+          <>
+            Want to try the live flows first?{" "}
+            <a
+              href={SANDBOX_URL}
+              className="font-medium text-primary hover:underline"
+            >
+              Open the sandbox
+            </a>
+          </>
+        ) : (
+          <>
+            Already have credentials?{" "}
+            <Link href="/login" className="font-medium text-primary hover:underline">
+              Sign in
+            </Link>
+          </>
+        )
       }
     >
       <ErrorBanner>{error}</ErrorBanner>

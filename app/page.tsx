@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { Brand } from "@/components/brand";
+import { PORTAL_DOCS_ONLY, SANDBOX_URL } from "@/lib/portal";
 import { CodeBlock } from "@/components/docs/code-block";
 import { ArchitectureDiagram } from "@/components/docs/architecture-diagram";
 import { Aurora, HoverLift, Parallax, Reveal, Stagger, StaggerItem } from "@/components/motion";
@@ -68,14 +69,24 @@ export default function HomePage() {
                 <BookOpen className="size-4" /> Docs
               </Link>
             </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/login">Sign in</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/signup">
-                Get started <ArrowRight />
-              </Link>
-            </Button>
+            {PORTAL_DOCS_ONLY ? (
+              <Button asChild>
+                <Link href="/request-access">
+                  Request access <ArrowRight />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/login">Sign in</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/signup">
+                    Get started <ArrowRight />
+                  </Link>
+                </Button>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -119,9 +130,15 @@ export default function HomePage() {
               <Reveal delay={0.15}>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Button size="lg" asChild>
-                    <Link href="/signup">
-                      Create your account <ArrowRight />
-                    </Link>
+                    {PORTAL_DOCS_ONLY ? (
+                      <Link href="/request-access">
+                        Request API access <ArrowRight />
+                      </Link>
+                    ) : (
+                      <Link href="/signup">
+                        Create your account <ArrowRight />
+                      </Link>
+                    )}
                   </Button>
                   <Button size="lg" variant="outline" asChild>
                     <Link href="/docs/quickstart">
@@ -129,6 +146,20 @@ export default function HomePage() {
                     </Link>
                   </Button>
                 </div>
+                {PORTAL_DOCS_ONLY && (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    The interactive demo — signup, Sumsub KYC, the purchase flow,
+                    webhooks and the trading dashboard — is not available on this
+                    site: it would create real accounts. Try those in the{" "}
+                    <a
+                      href={SANDBOX_URL}
+                      className="underline underline-offset-4 hover:text-foreground"
+                    >
+                      sandbox
+                    </a>
+                    .
+                  </p>
+                )}
               </Reveal>
               <Reveal delay={0.2}>
                 <div className="mt-10 flex items-center gap-6 opacity-70">
@@ -250,14 +281,21 @@ export default function HomePage() {
                   Start building today
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-                  Create an account, grab your API token, and run your first live
-                  request straight from the docs.
+                  {PORTAL_DOCS_ONLY
+                    ? "Request access to get your client credentials, then build against the API with the docs and the sandbox."
+                    : "Create an account, grab your API token, and run your first live request straight from the docs."}
                 </p>
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
                   <Button size="lg" asChild>
-                    <Link href="/signup">
-                      Get started <ArrowRight />
-                    </Link>
+                    {PORTAL_DOCS_ONLY ? (
+                      <Link href="/request-access">
+                        Request access <ArrowRight />
+                      </Link>
+                    ) : (
+                      <Link href="/signup">
+                        Get started <ArrowRight />
+                      </Link>
+                    )}
                   </Button>
                   <Button size="lg" variant="outline" asChild>
                     <Link href="/docs">
