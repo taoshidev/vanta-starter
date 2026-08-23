@@ -14,6 +14,7 @@ import {
   type Endpoint,
 } from "@/lib/docs/api-catalog";
 import { highlight } from "@/lib/docs/highlight";
+import { PORTAL_DOCS_ONLY, SANDBOX_URL } from "@/lib/portal";
 
 export const metadata = { title: "API reference" };
 
@@ -107,7 +108,8 @@ export default async function ApiReferencePage() {
         <p className="text-lg text-muted-foreground">
           Every endpoint across the Hyperscaled API — {TOTAL_ENDPOINTS}+ routes
           spanning auth, KYC, payments, payouts, trading, webhooks, admin, and
-          the legacy partner-key surface. Search, copy a cURL, and run reads live.
+          the legacy partner-key surface. Search, copy a cURL,
+          {PORTAL_DOCS_ONLY ? " and try reads in the sandbox." : " and run reads live."}
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
           <Link
@@ -129,11 +131,23 @@ export default async function ApiReferencePage() {
         </div>
       </header>
 
-      <Callout type="tip" title="Run reads without leaving the page">
+      {PORTAL_DOCS_ONLY ? (
+        <Callout type="tip" title="Live execution happens in the sandbox">
+          This portal is docs-only, so there are no &ldquo;Run it now&rdquo;
+          buttons here. Each runnable endpoint links to the{" "}
+          <a href={SANDBOX_URL} className="underline underline-offset-4">
+            sandbox
+          </a>
+          , where the demo credentials let you execute reads against the staging
+          API without creating anything real.
+        </Callout>
+      ) : (
+        <Callout type="tip" title="Run reads without leaving the page">
         Endpoints marked with a “Run it now” button execute live against your
         environment using the app&apos;s server-side credentials and your signed-in
         session. Sign in to the dashboard first for authenticated reads.
       </Callout>
+      )}
 
       <ApiReferenceExplorer areas={areas} />
     </>
