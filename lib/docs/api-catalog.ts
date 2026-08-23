@@ -8,7 +8,8 @@ export type AuthKind =
   | "partner"
   | "partner-trader"
   | "partner-session"
-  | "provider";
+  | "provider"
+  | "platform";
 
 export const AUTH_LABEL: Record<AuthKind, string> = {
   public: "Public",
@@ -19,6 +20,7 @@ export const AUTH_LABEL: Record<AuthKind, string> = {
   "partner-trader": "Partner + Trader-ID",
   "partner-session": "Partner + session",
   provider: "Provider signature",
+  platform: "Platform only",
 };
 
 export type Endpoint = {
@@ -124,7 +126,7 @@ export const API_CATALOG: ApiArea[] = [
     docHref: "/docs/kyc",
     endpoints: [
       { method: "GET", path: "/v2/kyc/status", summary: "Read KYC status.", auth: "user", response: `{ "user_id": "usr_...", "kyc_provider": "sumsub", "kyc_status": "verified", "kyc_verified_at": "...", "kyc_failure_reason": null }`, runOp: "kyc.status" },
-      { method: "POST", path: "/v2/kyc/sumsub/token", summary: "Mint a Sumsub WebSDK access token.", auth: "user", response: `{ "token": "_act-...", "user_id": "usr_...", "level_name": "basic-kyc-level", "applicant_id": "..." }` },
+      { method: "POST", path: "/v2/kyc/sumsub/token", summary: "Mint a Sumsub WebSDK access token.", auth: "user", note: "The verification level is chosen by the platform from your tenant\u2019s app row \u2014 clients send nothing and should treat level_name as informational.", response: `{ "token": "_act-...", "user_id": "usr_...", "level_name": "id-and-liveness", "applicant_id": "..." }` },
       { method: "POST", path: "/v2/kyc/stripe-identity/session", summary: "Create a Stripe Identity verification session.", auth: "user", response: `{ "client_secret": "vs_...", "url": "https://...", "session_id": "vs_..." }` },
     ],
   },
@@ -155,13 +157,14 @@ export const API_CATALOG: ApiArea[] = [
   {
     id: "payouts",
     title: "Payouts",
-    description: "Read estimated profit owed and disburse it via Connect.",
+    description:
+      "Read what a trader has earned and what has been paid. Disbursement is platform-only.",
     docHref: "/docs/payouts",
     endpoints: [
       { method: "GET", path: "/v2/payouts/estimate", summary: "Estimated payout from validator HWM profit.", auth: "user", note: "Optional X-Prop-Account header.", response: `{ "amount_usd": 412.5, "amount_cents": 41250, "currency": "usd", "available": true }`, runOp: "payouts.estimate" },
       { method: "GET", path: "/v2/payouts", summary: "List the user's payouts.", auth: "user", response: `[ { "id": "po_...", "amount_cents": 41250, "currency": "usd", "status": "paid", "stripe_transfer_id": "tr_...", "completed_at": "..." } ]`, runOp: "payouts.list" },
-      { method: "POST", path: "/v2/payouts/request", summary: "Request a payout (creates a pending row).", auth: "user", request: `{ "amount_cents": 41250, "prop_account_id": "prop_..." }` },
-      { method: "POST", path: "/v2/payouts/{payout_id}/submit", summary: "Submit a pending payout to Stripe (app approval).", auth: "app" },
+      { method: "POST", path: "/v2/payouts/request", summary: "Request a payout (creates a pending row).", auth: "platform", note: "Requires the payouts:write scope, which the api superscope does not grant. Partner apps receive 403 V2_SCOPE_MISSING.", request: `{ "amount_cents": 41250, "prop_account_id": "prop_..." }` },
+      { method: "POST", path: "/v2/payouts/{payout_id}/submit", summary: "Submit a pending payout to Stripe — moves money.", auth: "platform", note: "Platform-operator step. Not callable by a partner tenant." },
     ],
   },
   {

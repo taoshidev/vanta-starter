@@ -10,7 +10,6 @@ import {
   listConnectAccountsAction,
   listPayoutsAction,
   refreshConnectLinkAction,
-  requestPayoutAction,
 } from "./payouts";
 
 const PAYOUT = {
@@ -71,10 +70,12 @@ describe("connect actions", () => {
 });
 
 describe("payout actions", () => {
-  it("requestPayoutAction forwards the amount + prop account id", async () => {
-    const spy = vi.spyOn(hsc.payouts, "request").mockResolvedValue(PAYOUT);
-    await requestPayoutAction(10_000, "prop-1");
-    expect(spy).toHaveBeenCalledWith({ amount_cents: 10_000, prop_account_id: "prop-1" });
+  // There is deliberately no requestPayoutAction/submitPayoutAction to test:
+  // payout initiation requires the platform-only `payouts:write` scope and is
+  // not callable by a partner tenant. See lib/hsc/client.ts.
+  it("exposes no payout-initiation surface", () => {
+    expect("request" in hsc.payouts).toBe(false);
+    expect("submit" in hsc.payouts).toBe(false);
   });
 
   it("listPayoutsAction returns the history", async () => {
@@ -96,10 +97,10 @@ describe("payout actions", () => {
   });
 
   it("maps payout errors to the failure envelope", async () => {
-    vi.spyOn(hsc.payouts, "request").mockRejectedValue(
+    vi.spyOn(hsc.payouts, "list").mockRejectedValue(
       new hsc.HscApiError(402, "V2_PAYOUTS_NOT_CONFIGURED", "no"),
     );
-    const r = await requestPayoutAction(5_000);
+    const r = await listPayoutsAction();
     expect(r).toMatchObject({ ok: false, code: "V2_PAYOUTS_NOT_CONFIGURED" });
   });
 });

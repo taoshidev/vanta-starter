@@ -29,6 +29,9 @@ const BEARER: Record<AuthKind, string | null> = {
   partner: "<partner_api_key>",
   "partner-trader": "<partner_api_key>",
   "partner-session": "<partner_api_key>",
+  // Platform-operator endpoints. A partner tenant cannot obtain a token that
+  // satisfies these, so there is no bearer to show.
+  platform: null,
 };
 
 function buildCurl(ep: Endpoint): string {

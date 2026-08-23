@@ -9,6 +9,9 @@ const TONE: Record<string, BadgeProps["variant"]> = {
   succeeded: "success",
   processing: "warning",
   pending: "warning",
+  // Connect account that has submitted details but isn't payout-enabled yet.
+  pending_review: "warning",
+  submitted: "warning",
   needs_input: "warning",
   requested: "warning",
   unverified: "secondary",

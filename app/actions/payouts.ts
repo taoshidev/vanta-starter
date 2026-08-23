@@ -5,7 +5,13 @@ import * as hsc from "@/lib/hsc/client";
 import type { ActionResult } from "./auth";
 
 function failure(e: unknown): ActionResult {
-  if (e instanceof hsc.HscApiError) return { ok: false, code: e.code, message: e.message };
+  if (e instanceof hsc.HscApiError) {
+    // The UI masks operator-facing detail (see lib/errors.ts), so keep the raw
+    // message in the server log — that is where your own operator will look
+    // when a tenant is misconfigured.
+    console.error("[hsc] payouts action failed:", e.code, e.message);
+    return { ok: false, code: e.code, message: e.message };
+  }
   return { ok: false, code: "UNKNOWN", message: e instanceof Error ? e.message : "Unknown error" };
 }
 
@@ -33,17 +39,8 @@ export async function refreshConnectLinkAction(stripeAccountId: string) {
   }
 }
 
-export async function requestPayoutAction(amount_cents: number, prop_account_id?: string) {
-  try {
-    return {
-      ok: true as const,
-      data: await hsc.payouts.request({ amount_cents, prop_account_id }),
-    };
-  } catch (e) {
-    return failure(e);
-  }
-}
-
+// NOTE: there is deliberately no requestPayoutAction / submitPayoutAction.
+// Payout initiation is platform-only (see lib/hsc/client.ts payouts).
 export async function listPayoutsAction() {
   try {
     return { ok: true as const, data: await hsc.payouts.list() };

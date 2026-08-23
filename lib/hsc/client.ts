@@ -251,11 +251,17 @@ export const connect = {
     ),
 };
 
+/**
+ * Payouts are READ-ONLY for partner apps.
+ *
+ * Initiation (`POST /v2/payouts/request` and `POST /v2/payouts/{id}/submit`)
+ * requires the `payouts:write` scope, which the platform deliberately excludes
+ * from the `api` superscope — a partner tenant cannot be granted it, and calls
+ * return 403 `V2_SCOPE_MISSING`. Disbursement is an operator-driven step run by
+ * the platform, not by your app. Show your users what they have earned with
+ * `estimate()` and what has been paid with `list()`.
+ */
 export const payouts = {
-  request: (body: { amount_cents: number; prop_account_id?: string }) =>
-    hsc<PayoutResponse>("/v2/payouts/request", { method: "POST", json: body }),
-  submit: (payoutId: string) =>
-    hsc<PayoutResponse>(`/v2/payouts/${payoutId}/submit`, { method: "POST" }),
   list: () => hsc<PayoutResponse[]>("/v2/payouts"),
   estimate: (propAccountId?: string) =>
     hsc<PayoutEstimate>("/v2/payouts/estimate", {
