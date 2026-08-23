@@ -94,28 +94,26 @@ export default function AuthDocsPage() {
         </Endpoint>
       </DocSection>
 
-      <DocSection title="App token (OAuth client credentials)" description="Exchange your client_id/client_secret for a short-lived bearer token. Do this server-side only — never expose the secret to the browser.">
+      <DocSection title="App token (OAuth client credentials)" description="Exchange your client_id/client_secret for a short-lived bearer token. The body is form-encoded (application/x-www-form-urlencoded), per RFC 6749 — a JSON body is rejected with 422. Do this server-side only — never expose the secret to the browser.">
         <Endpoint method="POST" path="/v2/oauth/token" auth="public">
           <ParamTable
-            title="Request body"
+            title="Form fields"
             rows={[
               { name: "grant_type", type: "string", required: true, desc: '"client_credentials"' },
               { name: "client_id", type: "string", required: true, desc: "Your app's client id (hsc_…)" },
               { name: "client_secret", type: "string", required: true, desc: "Your app's secret (hsk_…)" },
-              { name: "scope", type: "string", required: false, desc: 'Defaults to "api"' },
+              { name: "scope", type: "string", required: false, desc: "Space-separated. Omit to receive every scope your app holds. Scopes your app lacks are silently dropped from the grant \u2014 400 V2_INVALID_SCOPE comes back only when none of the requested scopes is allowed. Read the scope field of the token response to see what was actually granted" },
             ]}
           />
           <CodeBlock
             lang="bash"
             filename="curl"
             code={`curl -X POST http://localhost:8000/v2/oauth/token \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "grant_type": "client_credentials",
-    "client_id": "hsc_...",
-    "client_secret": "hsk_...",
-    "scope": "api"
-  }'`}
+  -H "Content-Type: application/x-www-form-urlencoded" \\
+  -d grant_type=client_credentials \\
+  -d client_id=hsc_... \\
+  -d client_secret=hsk_... \\
+  -d scope=api`}
           />
           <CodeBlock
             lang="json"
@@ -133,6 +131,12 @@ export default function AuthDocsPage() {
           flow through <code>lib/hsc/client.ts</code> on the server, which caches
           the token automatically.
         </Callout>
+      </DocSection>
+
+      <DocSection title="Programmatic trading keys" description="A third credential exists for one surface only: per-trader API keys authenticate /v2/trading (writes, reads, SSE) on their own via the X-Api-Key header, so a trader's bot never holds your client secret. Everything else on this page is unchanged for keys — they cannot reach any other endpoint. See the API keys page for minting, binding and revocation.">
+        <p className="text-sm text-muted-foreground">
+          Details and examples: <a href="/docs/api-keys">/docs/api-keys</a>.
+        </p>
       </DocSection>
 
       <DocSection title="End-user sessions" description="Once your app is authenticated, you create and authenticate the people who use it. A successful signup verification or login returns a session_token to send as X-Session-Token on subsequent calls.">

@@ -25,6 +25,7 @@ const BEARER: Record<AuthKind, string | null> = {
   provider: null,
   app: "<app_access_token>",
   user: "<app_access_token>",
+  "user-key": "<app_access_token>",
   admin: "<admin_token>",
   partner: "<partner_api_key>",
   "partner-trader": "<partner_api_key>",
@@ -38,10 +39,20 @@ function buildCurl(ep: Endpoint): string {
   const lines: string[] = [`curl -X ${ep.method} ${BASE}${ep.path} \\`];
   const bearer = BEARER[ep.auth];
   if (bearer) lines.push(`  -H "Authorization: Bearer ${bearer}" \\`);
-  if (ep.auth === "user") lines.push(`  -H "X-Session-Token: <user_session_token>" \\`);
+  if (ep.auth === "user" || ep.auth === "user-key")
+    lines.push(`  -H "X-Session-Token: <user_session_token>" \\`);
+  // "user-key" routes equally accept `X-Api-Key: <key_id>.<key_secret>` alone
+  // in place of the two headers above — see /docs/api-keys.
   if (ep.auth === "partner-trader") lines.push(`  -H "Trader-ID: <hl_wallet | subaccount_id>" \\`);
   if (ep.note?.includes("X-Prop-Account")) lines.push(`  -H "X-Prop-Account: <prop_account_id>" \\`);
-  if (ep.request) {
+  if (ep.requestForm) {
+    // Form-encoded, not JSON — see the `requestForm` note on the Endpoint type.
+    lines.push(`  -H "Content-Type: application/x-www-form-urlencoded" \\`);
+    const pairs = ep.requestForm.split("\n").filter(Boolean);
+    pairs.forEach((pair, i) => {
+      lines.push(`  -d ${pair}${i === pairs.length - 1 ? "" : " \\"}`);
+    });
+  } else if (ep.request) {
     lines.push(`  -H "Content-Type: application/json" \\`);
     lines.push(`  -d '${ep.request}'`);
   } else {
@@ -64,7 +75,14 @@ async function toRefArea(area: (typeof API_CATALOG)[number]): Promise<RefArea> {
         runOp: ep.runOp,
         curl,
         curlHtml: await highlight(curl, "bash"),
-        requestHtml: ep.request ? await highlight(ep.request, "json") : undefined,
+        requestLabel: ep.requestForm
+          ? "Form fields (application/x-www-form-urlencoded)"
+          : "Request body",
+        requestHtml: ep.requestForm
+          ? await highlight(ep.requestForm, "bash")
+          : ep.request
+            ? await highlight(ep.request, "json")
+            : undefined,
         responseHtml: ep.response ? await highlight(ep.response, "json") : undefined,
       };
     }),

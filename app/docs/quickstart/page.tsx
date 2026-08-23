@@ -52,7 +52,10 @@ alembic upgrade head              # create all tables`}
           filename="hyperscaled-api/.env (essentials)"
           code={`V2_DATABASE_URL=postgresql+asyncpg://hyperscaled:hyperscaled@localhost:5433/hyperscaled_api
 V2_REDIS_URL=redis://localhost:6379/0
-SESSION_ENCRYPTION_KEY=<openssl rand -base64 32>
+# 64 hex chars = a 32-byte AES-256-GCM key. Generate with:
+#   python -c "import secrets; print(secrets.token_hex(32))"   (or: openssl rand -hex 32)
+# base64 will NOT work: the API boots fine and then 500s on the first encrypt.
+SESSION_ENCRYPTION_KEY=<64 hex chars>
 
 # Stripe (test mode)
 V2_STRIPE_SECRET_KEY=sk_test_...
@@ -91,11 +94,18 @@ HYPERSCALED_VALIDATOR_API_KEY=...`}
         <CodeBlock
           lang="bash"
           filename="hyperscaled-api"
-          code={`# bootstrap the first admin from env vars, then sign in at /admin
-ADMIN_EMAIL=you@taoshi.io ADMIN_PASSWORD=... python -m hyperscaled_api.scripts.bootstrap_admin
+          code={`# Create the first admin. Run from the hyperscaled-api repo root.
+# The password is prompted for interactively (hidden, 12 chars minimum) —
+# do not pass it on the command line or in an env var.
+python scripts/create_admin.py --email you@taoshi.io --name "You"
 
-# open the admin dashboard, set up 2FA, then "Register app"
-open http://localhost:8000/admin`}
+# Alternatively, for local auto-seed: set V2_ADMIN_EMAIL and V2_ADMIN_PASSWORD
+# (optionally V2_ADMIN_NAME) before starting uvicorn. The API seeds a superadmin
+# on startup only when both are set and the admins table is empty. Settings use
+# env_prefix="V2_", so unprefixed ADMIN_EMAIL / ADMIN_PASSWORD do nothing.
+
+# Sign in, enroll TOTP (forced on first login), then "Register app"
+open http://localhost:8000/admin/login`}
         />
         <Callout type="tip" title="Save the client secret">
           Registering an app returns a <code>client_id</code> and a{" "}

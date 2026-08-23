@@ -35,6 +35,13 @@ export default function TradingDocsPage() {
         <code>400 Bad Request</code>.
       </Callout>
 
+      <Callout type="tip" title="Bots: authenticate with an API key instead">
+        Every endpoint on this page also accepts{" "}
+        <code>X-Api-Key: &lt;key_id&gt;.&lt;key_secret&gt;</code> on its own — no
+        bearer or session token needed. Mint one per trader at{" "}
+        <a href="/docs/api-keys">/docs/api-keys</a>.
+      </Callout>
+
       <DocSection title="Submit an order">
         <Endpoint method="POST" path="/v2/trading/orders" auth="user">
           <ParamTable
@@ -107,7 +114,7 @@ await trading.submit(
   "positions": [ /* open positions */ ],
   "orders": [ /* resting orders */ ],
   "history": [ /* closed positions */ ],
-  "balance": { "account_size": 25000, "status": "active" }
+  "balance": { "account_size": 25000, "status": "evaluation", "subaccount_info": { /* validator snapshot */ } }
 }`}
           />
           <ApiTester
@@ -116,6 +123,17 @@ await trading.submit(
             path="/v2/trading/desk-poll"
           />
         </Endpoint>
+        <p className="text-sm text-muted-foreground">
+          <code>balance.status</code> mirrors the prop-account status —{" "}
+          <code>provisioning</code>, <code>subaccount_failed</code>,{" "}
+          <code>evaluation</code>, <code>funded</code> or{" "}
+          <code>eliminated</code>. It is never{" "}
+          <code>active</code>. Both <code>status</code> and{" "}
+          <code>subaccount_info</code> are omitted entirely when the account has
+          no <code>synthetic_hotkey</code> yet or the validator fetch fails, so
+          the bundle degrades to <code>{`{ "account_size": 25000 }`}</code> with
+          empty positions, orders and history.
+        </p>
         <p className="text-sm text-muted-foreground">
           Individual reads: <code>GET /v2/trading/positions</code>,{" "}
           <code>GET /v2/trading/orders</code>,{" "}

@@ -36,8 +36,8 @@ export default function WebhooksDocsPage() {
         />
       </DocSection>
 
-      <DocSection title="Register an endpoint">
-        <Endpoint method="POST" path="/v2/webhook-endpoints" auth="user">
+      <DocSection title="Register an endpoint" description="Webhook endpoints are tenant-level objects owned by your app, not by an end user. Authenticate with your app's OAuth bearer token carrying the webhooks scope (the api superscope and the * wildcard also satisfy it); a token without any of them is rejected 403 V2_SCOPE_MISSING. No end-user session is involved.">
+        <Endpoint method="POST" path="/v2/webhook-endpoints" auth="app">
           <ParamTable
             title="Request body"
             rows={[
@@ -51,7 +51,6 @@ export default function WebhooksDocsPage() {
             filename="curl"
             code={`curl -X POST http://localhost:8000/v2/webhook-endpoints \\
   -H "Authorization: Bearer <app_access_token>" \\
-  -H "X-Session-Token: <user_session_token>" \\
   -H "Content-Type: application/json" \\
   -d '{
     "url": "https://yourapp.com/api/webhooks",
@@ -160,7 +159,7 @@ export async function POST(req: Request) {
       </DocSection>
 
       <DocSection title="List & remove endpoints">
-        <Endpoint method="GET" path="/v2/webhook-endpoints" auth="user">
+        <Endpoint method="GET" path="/v2/webhook-endpoints" auth="app">
           <CodeBlock
             lang="json"
             filename="200 OK"
