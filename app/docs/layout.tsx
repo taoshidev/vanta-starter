@@ -7,6 +7,7 @@ import { DocsSidebar } from "@/components/docs/docs-sidebar";
 import { DocsToc } from "@/components/docs/toc";
 import { PageFade } from "@/components/motion/page-fade";
 import { Button } from "@/components/ui/button";
+import { PORTAL_DOCS_ONLY, SANDBOX_URL } from "@/lib/portal";
 
 export const metadata: Metadata = {
   title: {
@@ -41,14 +42,38 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 OpenAPI <ArrowUpRight className="size-3.5" />
               </a>
             </Button>
-            <Button asChild size="sm">
-              <Link href="/dashboard">
-                <LayoutDashboard className="size-3.5" /> Dashboard
-              </Link>
-            </Button>
+            {PORTAL_DOCS_ONLY ? (
+              <Button asChild size="sm">
+                <Link href="/request-access">Request access</Link>
+              </Button>
+            ) : (
+              <Button asChild size="sm">
+                <Link href="/dashboard">
+                  <LayoutDashboard className="size-3.5" /> Dashboard
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>
+
+      {PORTAL_DOCS_ONLY && (
+        <div className="border-b border-border bg-card/40">
+          <p className="mx-auto max-w-7xl px-4 py-2.5 text-xs text-muted-foreground sm:px-6">
+            You&apos;re on the production developer portal. The interactive demo —
+            signup, Sumsub KYC, the purchase flow, webhooks, and the trading
+            dashboard — is disabled here because it would create real accounts.
+            Test those flows in the{" "}
+            <a
+              href={SANDBOX_URL}
+              className="font-medium text-foreground underline underline-offset-4"
+            >
+              sandbox
+            </a>{" "}
+            against the staging API.
+          </p>
+        </div>
+      )}
 
       <div className="mx-auto flex max-w-7xl gap-8 px-4 py-8 sm:px-6">
         <aside className="sticky top-20 hidden h-[calc(100vh-6rem)] w-56 shrink-0 overflow-y-auto lg:block">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { PORTAL_DOCS_ONLY } from "@/lib/portal";
 
 export default function NotFound() {
   return (
@@ -11,7 +12,11 @@ export default function NotFound() {
         The page you&apos;re looking for doesn&apos;t exist or has moved.
       </p>
       <Button asChild className="mt-6">
-        <Link href="/dashboard">Back to dashboard</Link>
+        {PORTAL_DOCS_ONLY ? (
+          <Link href="/docs">Back to the docs</Link>
+        ) : (
+          <Link href="/dashboard">Back to dashboard</Link>
+        )}
       </Button>
     </div>
   );

@@ -6,6 +6,7 @@ import { Loader2, Play } from "lucide-react";
 import { runDocsRequestAction, type DocsOperation } from "@/app/actions/docs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PORTAL_DOCS_ONLY, SANDBOX_URL } from "@/lib/portal";
 
 type Result = { status: number; body: unknown } | { error: string };
 
@@ -31,6 +32,28 @@ export function ApiTester({
 
   const ok =
     result && "status" in result && result.status >= 200 && result.status < 300;
+
+  if (PORTAL_DOCS_ONLY) {
+    // The portal ships without API credentials, so the live tester cannot run
+    // here. Same component, sandbox link instead of a Run button.
+    return (
+      <div className="rounded-xl border border-border bg-card/40">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+          <Badge variant="outline" className="font-mono text-[11px]">
+            {method}
+          </Badge>
+          <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
+            {path}
+          </code>
+          <Button size="sm" variant="outline" asChild>
+            <a href={`${SANDBOX_URL}/docs`} target="_blank" rel="noreferrer">
+              <Play /> Try it in the sandbox
+            </a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-border bg-card/40">
