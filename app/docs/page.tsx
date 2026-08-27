@@ -115,8 +115,8 @@ export default function DocsIndexPage() {
                 use case).
               </li>
               <li>
-                We provision your network identity and <strong>approve</strong> the
-                request — approval is manual.
+                We vet your request, configure your tenant, and{" "}
+                <strong>approve</strong> it — approval is manual.
               </li>
               <li>
                 You receive an email with a <strong>one-time link</strong> to

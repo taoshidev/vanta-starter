@@ -37,8 +37,8 @@ export default function AuthDocsPage() {
             contact email, and intended use.
           </li>
           <li>
-            An operator provisions your network identity and{" "}
-            <strong>approves</strong> the request (manual review).
+            An operator vets your request, configures your tenant, and{" "}
+            <strong>approves</strong> it (manual review).
           </li>
           <li>
             You receive an email with a <strong>one-time link</strong> that
@@ -69,9 +69,12 @@ export default function AuthDocsPage() {
           </a>
         </div>
         <Callout type="info" title="Why approval is manual">
-          Each tenant maps to a vanta-network <code>entity_hotkey</code> that is
-          minted out-of-band on Bittensor. We provision that first, then approve
-          your request and issue OAuth credentials scoped to your tenant.
+          Approval stays manual: we vet each partner and configure
+          tenant-specific pieces (Stripe Connect return URLs, Sumsub level, and
+          — if you bring your own — network credentials) before issuing OAuth
+          credentials. Tenants without their own vanta-network credentials ride
+          the shared platform miner and their <code>entity_hotkey</code> is{" "}
+          <code>null</code>.
         </Callout>
         <Endpoint method="GET" path="/v2/apps/me" auth="app">
           <p className="text-sm text-muted-foreground">
@@ -80,7 +83,7 @@ export default function AuthDocsPage() {
           </p>
           <CodeBlock
             lang="json"
-            filename="200 OK"
+            filename="200 OK — own miner"
             code={`{
   "app_id": "app_...",
   "slug": "company-a",
@@ -90,6 +93,22 @@ export default function AuthDocsPage() {
   "active": true
 }`}
           />
+          <CodeBlock
+            lang="json"
+            filename="200 OK — shared platform miner"
+            code={`{
+  "app_id": "app_...",
+  "slug": "company-b",
+  "name": "Company B",
+  "entity_hotkey": null,
+  "allowed_scopes": ["api"],
+  "active": true
+}`}
+          />
+          <p className="text-sm text-muted-foreground">
+            <code>entity_hotkey</code> is <code>null</code> for tenants riding
+            the shared platform miner — treat the field as nullable.
+          </p>
           <ApiTester operation="apps.me" method="GET" path="/v2/apps/me" />
         </Endpoint>
       </DocSection>
