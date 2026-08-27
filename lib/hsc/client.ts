@@ -162,7 +162,7 @@ export const auth = {
 
 export const oauth = {
   me: () =>
-    hsc<{ app_id: string; slug: string; entity_hotkey: string; scopes: string[] }>(
+    hsc<{ app_id: string; slug: string; entity_hotkey: string | null; scopes: string[] }>(
       "/v2/oauth/me",
       { authedAsUser: false },
     ),
@@ -174,7 +174,7 @@ export const apps = {
       app_id: string;
       slug: string;
       name: string;
-      entity_hotkey: string;
+      entity_hotkey: string | null;
       allowed_scopes: string[];
       active: boolean;
     }>("/v2/apps/me", { authedAsUser: false }),

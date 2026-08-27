@@ -110,6 +110,12 @@ Every app authenticates to `hyperscaled-api` with an OAuth `client_id` /
      --network-api-key k_live_xxx
    ```
 
+   `--entity-hotkey` and `--network-api-key` are optional (both-or-neither):
+   omit both and the tenant rides the shared platform miner, with
+   `entity_hotkey: null` on its profile. Keyless creation requires the
+   deployment to have `V2_ENTITY_MINER_API_KEY` set — without it the request
+   is refused with `422 V2_APP_NO_NETWORK_KEY`.
+
 Either way you end up with an `HSC_CLIENT_ID` and `HSC_CLIENT_SECRET` to put in
 `.env.local`.
 
