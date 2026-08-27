@@ -27,6 +27,20 @@ describe("runDocsRequestAction", () => {
     expect(r).toMatchObject({ ok: true, data: { status: 200 } });
   });
 
+  it("handles a shared-platform-miner tenant (entity_hotkey null)", async () => {
+    vi.spyOn(hsc.oauth, "me").mockResolvedValue({
+      app_id: "a1",
+      slug: "acme",
+      entity_hotkey: null,
+      scopes: ["api"],
+    });
+    const r = await runDocsRequestAction("oauth.me");
+    expect(r).toMatchObject({
+      ok: true,
+      data: { status: 200, body: { entity_hotkey: null } },
+    });
+  });
+
   it("resolves the first prop account before a trading read", async () => {
     const list = vi
       .spyOn(hsc.payments, "listPropAccounts")
